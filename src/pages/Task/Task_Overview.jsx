@@ -117,6 +117,7 @@ const Task_Overview = () => {
       headerName: "Assigned To",
       field: "users",
       filter: true,
+      flex: 1,
       cellRendererFramework: ({ value }) => (
         <ul style={{ padding: 0, margin: 0 }}>
           {value.map((user) => (
