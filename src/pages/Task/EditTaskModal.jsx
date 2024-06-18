@@ -46,7 +46,7 @@ const EditTaskModal = ({ open, handleClose, taskId }) => {
     const fetchTask = async () => {
       try {
         const response = await axios.get(
-          `http://localhost:4000/api/tasks/${taskId}`
+          `https://taskserver-99hb.onrender.com/api/tasks/${taskId}`
         );
         const taskData = response.data; // Assuming response.data is an object with task details
         console.log(taskData);
@@ -69,7 +69,7 @@ const EditTaskModal = ({ open, handleClose, taskId }) => {
 
     const fetchUsers = async () => {
       try {
-        const response = await axios.get("http://localhost:4000/api/users");
+        const response = await axios.get("https://taskserver-99hb.onrender.com/api/users");
         const userData = response.data; // Assuming response.data is an array of user objects
         setUsers(userData);
       } catch (error) {
@@ -104,7 +104,7 @@ const EditTaskModal = ({ open, handleClose, taskId }) => {
     // Example of submitting taskData to backend
     try {
       const response = await axios.patch(
-        `http://localhost:4000/api/tasks/${taskId}`,
+        `https://taskserver-99hb.onrender.com/api/tasks/${taskId}`,
         taskData
       );
       console.log("Task updated:", response.data);
