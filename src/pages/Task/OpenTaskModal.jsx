@@ -93,7 +93,7 @@ const OpenTaskModal = ({ open, handleClose, taskId }) => {
     // Example of submitting taskData to backend
     try {
       const response = await axios.patch(
-        `http://localhost:4000/api/tasks/${taskId}`,
+        `https://taskserver-99hb.onrender.com/api/tasks/${taskId}`,
         taskData
       );
       console.log("Task updated:", response.data);
