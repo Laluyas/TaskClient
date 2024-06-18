@@ -102,22 +102,17 @@ export default function SignIn() {
       if (response) {
         setOpenSnackbar(true);
         setSnackbarSeverity("success");
-        setSnackbarMessage("User login successful!"); // Set success message from response
+        setSnackbarMessage(response.data.mssg); // Set success message from response
         setTimeout(() => {
           navigate("/authenticated/home");
         }, 1500); // Navigate after 3 seconds
       }
     } catch (error) {
       console.error("There was an error!", error);
-      if (error.response && error.response.data && error.response.data.error) {
-        setOpenSnackbar(true);
-        setSnackbarSeverity("error");
-        setSnackbarMessage(error.response.data.error); // Set success message from response
-      } else {
-        setOpenSnackbar(true);
-        setSnackbarSeverity("error");
-        setSnackbarMessage("Unexpected Error occured"); // Set success message from response
-      }
+      setOpenSnackbar(true);
+      setSnackbarSeverity("error");
+      setSnackbarMessage(error.response.data.mssg); // Set success message from response
+      
     }
   };
 
