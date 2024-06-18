@@ -17,6 +17,7 @@ import { Link as RouterLink, useNavigate } from 'react-router-dom';
 import axios from 'axios'; // Importing axios
 import Snackbar from '@mui/material/Snackbar';
 import MuiAlert from '@mui/material/Alert';
+import { useState } from 'react';
 
 function Copyright(props) {
   return (
@@ -37,8 +38,9 @@ export default function SignUp() {
 
   const navigate = useNavigate()
   const [role, setRole] = React.useState([]);
-  const [openError, setOpenError] = React.useState(false);
-  const [errorMessage, setErrorMessage] = React.useState('');
+  const [openSnackbar, setOpenSnackbar] = useState(false);
+  const [snackbarSeverity, setSnackbarSeverity] = useState("success");
+  const [snackbarMessage, setSnackbarMessage] = useState("");
 
   const handleRoleChange = (event) => {
     const { value } = event.target;
@@ -58,26 +60,25 @@ export default function SignUp() {
       const response = await axios.post('https://taskserver-99hb.onrender.com/api/users/register', user);
       console.log('User registered successfully:', response.data);
       navigate("/")
-      
+      setOpenSnackbar(true);
+      setSnackbarSeverity("success");
+      setSnackbarMessage(response.data.mssg); // Set success message from response
     } catch (error) {
       console.error('Error registering user:', error);
-      if (error.response && error.response.data && error.response.data.error) {
-        setErrorMessage(error.response.data.error);
-        setOpenError(true);
+        setOpenSnackbar(true);
+        setSnackbarSeverity("error");
+        setSnackbarMessage(error.response.data.mssg); // Set success message from response
         console.log(error)
-      } else {
-        setErrorMessage('An unexpected error occurred.');
-        setOpenError(true);
-      }
     }
   };
 
-  const handleCloseError = (event, reason) => {
-    if (reason === 'clickaway') {
+  const handleCloseSnackbar = (event, reason) => {
+    if (reason === "clickaway") {
       return;
     }
-    setOpenError(false);
+    setOpenSnackbar(false);
   };
+
   return (
     <ThemeProvider theme={defaultTheme}>
       <Container component="main" maxWidth="xs">
@@ -170,9 +171,19 @@ export default function SignUp() {
         </Box>
         <Copyright sx={{ mt: 5 }} />
       </Container>
-      <Snackbar open={openError} autoHideDuration={6000} onClose={handleCloseError}>
-        <MuiAlert elevation={6} variant="filled" onClose={handleCloseError} severity="error">
-          {errorMessage}
+      <Snackbar
+        open={openSnackbar}
+        autoHideDuration={6000}
+        onClose={handleCloseSnackbar}
+        anchorOrigin={{ vertical: "top", horizontal: "right" }}
+      >
+        <MuiAlert
+          elevation={6}
+          variant="filled"
+          onClose={handleCloseSnackbar}
+          severity={snackbarSeverity} // Severity can be success, error, warning, info
+        >
+          {snackbarMessage}
         </MuiAlert>
       </Snackbar>
     </ThemeProvider>
