@@ -164,7 +164,9 @@ const Task_Overview = () => {
     <>
       <Container>
         <Row>
-          <h2 style={{ margin: "10px 50px" }}>Task Overview</h2>
+          <center>
+              <h2 style={{ margin: "10px 0" }}>Task Overview</h2>
+          </center>  
         </Row>
         <Row>
           <div className="d-flex justify-content-end">
