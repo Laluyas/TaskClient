@@ -112,7 +112,7 @@ const Task_Overview = () => {
     { field: "dueDate", filter: true, valueFormatter: dateFormatter },
     { field: "priority", filter: true, valueFormatter: priorityFormatter },
     { field: "status", filter: true },
-    { field: "category", filter: true },
+    //{ field: "category", filter: true },
     {
       headerName: "Assigned To",
       field: "users",
