@@ -33,7 +33,7 @@ const OpenTaskModal = ({ open, handleClose, taskId }) => {
     const fetchTask = async () => {
       try {
         const response = await axios.get(
-          `http://localhost:4000/api/tasks/${taskId}`
+          `https://taskserver-99hb.onrender.com/api/tasks/${taskId}`
         );
         const taskData = response.data; // Assuming response.data is an object with task details
         console.log(taskData);
