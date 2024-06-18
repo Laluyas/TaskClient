@@ -21,9 +21,7 @@ function App() {
           </Col>          
         </Row>
         <Row>
-          <Col>
             <Outlet />
-          </Col>
         </Row>
       </Container>
 
