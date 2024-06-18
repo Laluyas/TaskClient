@@ -45,7 +45,7 @@ const AddTaskModal = ({ open, handleClose }) => {
   useEffect(() => {
     const fetchUsers = async () => {
       try {
-        const response = await axios.get("http://localhost:4000/api/users");
+        const response = await axios.get("https://taskserver-99hb.onrender.com/api/users");
         console.log("Users list:", response.data);
         setUsers(response.data); // Set the fetched users into state
       } catch (error) {
