@@ -185,7 +185,7 @@ const Task_Overview = () => {
           <Col>
             <div
               className="ag-theme-quartz-dark" // applying the grid theme
-              style={{ height: 500 }} // the grid will fill the size of the parent container
+              style={{ height: 600 }} // the grid will fill the size of the parent container
             >
               <AgGridReact
                 rowData={rowData}
