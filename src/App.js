@@ -16,13 +16,15 @@ function App() {
   const Layout = () => (
     <Container fluid>
         <Row>
-          <Col xs="auto" style={{ width: '25px' }}>
+          <Col>
             <Sidebar />
-          </Col>
-          <Col xs={11}>
-            <Outlet />
-          </Col>
+          </Col>          
         </Row>
+    <Row>
+    <Col}>
+        <Outlet />
+    </Col>
+    </Row>
       </Container>
 
   );
