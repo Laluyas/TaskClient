@@ -20,11 +20,11 @@ function App() {
             <Sidebar />
           </Col>          
         </Row>
-    <Row>
-    <Col}>
-        <Outlet />
-    </Col>
-    </Row>
+        <Row>
+          <Col>
+            <Outlet />
+          </Col>
+        </Row>
       </Container>
 
   );
