@@ -63,7 +63,7 @@ const Task_Overview = () => {
     const handleDelete = () => {
       // Make sure to replace 'http://localhost:4000' with your actual backend URL
       axios
-        .delete(`http://localhost:4000/api/tasks/${data._id}`)
+        .delete(`https://taskserver-99hb.onrender.com/api/tasks/${data._id}`)
         .then((response) => {
           setOpenSnackbar(true);
           setSnackbarSeverity("success");
@@ -132,7 +132,7 @@ const Task_Overview = () => {
   // Fetch task details with Axios
   useEffect(() => {
     axios
-      .get("http://localhost:4000/api/tasks/") // Replace with your API endpoint
+      .get("https://taskserver-99hb.onrender.com/api/tasks/") // Replace with your API endpoint
       .then((response) => {
         // Map over response data and format 'users' field if needed
         const formattedData = response.data.map((task) => ({
