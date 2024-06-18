@@ -54,7 +54,7 @@ const AddUserModal = ({ open, handleClose }) => {
     console.log("New User Data:", user);
     try {
       const response = await axios.post(
-        "http://localhost:4000/api/users/register",
+        "https://taskserver-99hb.onrender.com/api/users/register",
         user
       );
       setOpenSnackbar(true);
