@@ -294,7 +294,7 @@ const Home = () => {
   return (
     <>
       <Container>
-        <Row className="mt-5">
+        <Row className="mt-2">
           <Box sx={{ borderBottom: 1, borderColor: "divider" }}>
             <Tabs
               value={value}
