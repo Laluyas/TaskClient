@@ -28,7 +28,7 @@ const EditUserModal = ({ open, handleClose, userId }) => {
     if (open && userId) {
       // Fetch user details from API using userId
       axios
-        .get(`http://localhost:4000/api/users/${userId}`)
+        .get(`https://taskserver-99hb.onrender.com/api/users/${userId}`)
         .then((response) => {
           const userData = response.data;
           setEmail(userData.email);
@@ -72,7 +72,7 @@ const EditUserModal = ({ open, handleClose, userId }) => {
     console.log(user)
     try {
       const response = await axios.patch(
-        `http://localhost:4000/api/users/${userId}`,
+        `https://taskserver-99hb.onrender.com/api/users/${userId}`,
         user
       );
       setOpenSnackbar(true);
