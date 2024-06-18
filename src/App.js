@@ -2,14 +2,14 @@ import logo from "./logo.svg";
 import "./App.css";
 import Sidebar from "./components/Sidebar";
 import Task_Overview from "./pages/Task/Task_Overview";
-import User_Management from "./pages/Task/User_Management";
-import User_NewEdit from "./pages/Task/User_NewEdit";
+import User_Management from "./pages/User/User_Management";
+import User_NewEdit from "./pages/User/User_NewEdit";
 import Home from "./pages/Task/Home";
 import NoPage from "./pages/Task/NoPage";
 import  { BrowserRouter, Link, Outlet, Route, Routes } from 'react-router-dom'
 import { Col, Container, Row } from "react-bootstrap";
-import SignUp from "./pages/Task/SignUp";
-import SignIn from "./pages/Task/SignIn";
+import SignUp from "./pages/Authentication/SignUp";
+import SignIn from "./pages/Authentication/SignIn";
 
 function App() {
 

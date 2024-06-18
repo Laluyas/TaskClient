@@ -6,9 +6,9 @@ import { Container, Row } from "react-bootstrap";
 import Snackbar from "@mui/material/Snackbar";
 import MuiAlert from "@mui/material/Alert";
 import axios from "axios";
-import AddUserModal from "./AddUserModal"; // Import your modal component
+import AddUserModal from "../User/AddUserModal"; // Import your modal component
 import { Button } from "@mui/material";
-import EditUserModal from "./EditUserModal";
+import EditUserModal from "../User/EditUserModal";
 
 // User Management Component
 const User_Management = () => {
@@ -93,9 +93,15 @@ const User_Management = () => {
       .then((response) => {
         setRowData(response.data);
         console.log(response.data);
+        setOpenSnackbar(true);
+        setSnackbarSeverity("success");
+        setSnackbarMessage("Users loaded from Database successfully"); // Set success message from response
       })
       .catch((error) => {
         console.error("Error fetching user data:", error);
+        setOpenSnackbar(true);
+        setSnackbarSeverity("error");
+        setSnackbarMessage("There was an error fetching the user data from Database!"); // Set error message from response
       });
   }, []);
 

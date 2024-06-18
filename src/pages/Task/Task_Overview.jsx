@@ -7,6 +7,8 @@ import { Col, Container, Row } from "react-bootstrap";
 import AddTaskModal from "./AddTaskModal";
 import { Button } from "@mui/material";
 import EditTaskModal from "./EditTaskModal";
+import Snackbar from "@mui/material/Snackbar";
+import MuiAlert from "@mui/material/Alert";
 
 const Task_Overview = () => {
   // Row Data: The data to be displayed.
@@ -15,6 +17,11 @@ const Task_Overview = () => {
 
   const [openAddModal, setAddOpenModal] = useState(false);
   const [openEditModal, setEditOpenModal] = useState(false);
+
+  const [openSnackbar, setOpenSnackbar] = useState(false);
+  const [snackbarSeverity, setSnackbarSeverity] = useState("success");
+  const [snackbarMessage, setSnackbarMessage] = useState("");
+  
 
   const handleAddOpenModal = () => {
     setAddOpenModal(true);
@@ -32,6 +39,13 @@ const Task_Overview = () => {
     setEditOpenModal(false);
   };
 
+  const handleCloseSnackbar = (event, reason) => {
+    if (reason === "clickaway") {
+      return;
+    }
+    setOpenSnackbar(false);
+  };
+
   const CustomEditButtonComponent = ({ data }) => {
     const handleEdit = () => {
       setSelectedTaskId(data._id);
@@ -45,20 +59,21 @@ const Task_Overview = () => {
     );
   };
 
-
-
   const CustomDeleteButtonComponent = ({ data }) => {
     const handleDelete = () => {
       // Make sure to replace 'http://localhost:4000' with your actual backend URL
       axios
         .delete(`http://localhost:4000/api/tasks/${data._id}`)
         .then((response) => {
-          window.alert("Delete successful for row with ID: " + data._id);
-          // Optionally, you can perform additional actions after successful deletion
+          setOpenSnackbar(true);
+          setSnackbarSeverity("success");
+          setSnackbarMessage("Delete successful for task row with ID: " + data._id); // Set success message from response
         })
         .catch((error) => {
           console.error("Error deleting data:", error);
-          // Handle error, show error message or feedback to the user
+          setOpenSnackbar(true);
+          setSnackbarSeverity("error");
+          setSnackbarMessage("Delete failed for task row with ID: " + data._id); // Set success message from response
         });
     };
 
@@ -125,10 +140,18 @@ const Task_Overview = () => {
           users: task.users.map((user) => user.email), // Assuming 'users' field contains an array of user objects
         }));
         setRowData(formattedData);
-        console.log(formattedData);
+        console.log(response.data);
+        setOpenSnackbar(true);
+        setSnackbarSeverity("success");
+        setSnackbarMessage("Tasks loaded from Database successfully"); // Set success message from response
       })
       .catch((error) => {
         console.error("There was an error fetching the task data!", error);
+        setOpenSnackbar(true);
+        setSnackbarSeverity("error");
+        setSnackbarMessage(
+          "There was an error fetching the task data from Database!"
+        ); // Set error message from response
       });
   }, []);
 
@@ -172,6 +195,21 @@ const Task_Overview = () => {
           </Col>
         </Row>
       </Container>
+      <Snackbar
+        open={openSnackbar}
+        autoHideDuration={6000}
+        onClose={handleCloseSnackbar}
+        anchorOrigin={{ vertical: "top", horizontal: "right" }}
+      >
+        <MuiAlert
+          elevation={6}
+          variant="filled"
+          onClose={handleCloseSnackbar}
+          severity={snackbarSeverity} // Severity can be success, error, warning, info
+        >
+          {snackbarMessage}
+        </MuiAlert>
+      </Snackbar>
       <AddTaskModal open={openAddModal} handleClose={handleAddCloseModal} />
       <EditTaskModal
         open={openEditModal}

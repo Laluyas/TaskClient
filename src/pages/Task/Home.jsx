@@ -10,6 +10,8 @@ import { Button } from "@mui/material";
 import axios from "axios";
 import OpenTaskModal from "./OpenTaskModal";
 import NoEditOpenTaskModal from "./NoEditOpenTaskModal";
+import Snackbar from "@mui/material/Snackbar";
+import MuiAlert from "@mui/material/Alert";
 
 const Home = () => {
   const [value, setValue] = useState(0);
@@ -19,8 +21,20 @@ const Home = () => {
   const [openModal, setOpenModal] = useState(false); // State for modal open/close
   const [noEditOpenModal, setNoEditOpenModal] = useState(false); // State for modal open/close
   const [selectedTaskId, setselectedTaskId] = useState();
+
   // Clear stored email from localStorage
   const storedEmail = localStorage.getItem("email");
+
+  const [openSnackbar, setOpenSnackbar] = useState(false);
+  const [snackbarSeverity, setSnackbarSeverity] = useState("success");
+  const [snackbarMessage, setSnackbarMessage] = useState("");
+
+  const handleCloseSnackbar = (event, reason) => {
+    if (reason === "clickaway") {
+      return;
+    }
+    setOpenSnackbar(false);
+  };
 
   const handleChange = (event, newValue) => {
     setValue(newValue);
@@ -55,8 +69,24 @@ const Home = () => {
   };
 
   const CustomUnAssignButtonComponent = ({ data }) => {
-    const handleEdit = () => {
-      window.alert('Future Enhancement')
+    const handleEdit = async () => {
+      data.users = [];
+      // Example of submitting taskData to backend
+      try {
+        const response = await axios.patch(
+          `http://localhost:4000/api/tasks/${data._id}`,
+          data
+        );
+        console.log("Task updated:", response.data);
+        setOpenSnackbar(true);
+        setSnackbarSeverity("success");
+        setSnackbarMessage("Task unassigned"); // Set success message from response
+      } catch (error) {
+        console.error("Error updating task:", error);
+        setOpenSnackbar(true);
+        setSnackbarSeverity("error");
+        setSnackbarMessage(error.response.data.mssg); // Set error message from response
+      }
     };
 
     return (
@@ -67,8 +97,35 @@ const Home = () => {
   };
 
   const CustomAssignButtonComponent = ({ data }) => {
-    const handleEdit = async() => {
-      window.alert('Future Enhancement')
+    const handleEdit = async () => {
+
+      console.log("Data being sent:", data);
+
+      try {
+        const response = await axios.get(`http://localhost:4000/api/users`);
+        console.log("User Data:", response.data);
+        const user = response.data.filter(
+          (value) => value.email === storedEmail
+        );
+        data.users = [user[0]._id];
+        try {
+          const response = await axios.patch(
+            `http://localhost:4000/api/tasks/${data._id}`,
+            data
+          );
+          console.log("Task updated:", response.data);
+          setOpenSnackbar(true);
+          setSnackbarSeverity("success");
+          setSnackbarMessage("Task assigned to you!");
+        } catch (error) {
+          console.error("Error updating task:", error);
+          setOpenSnackbar(true);
+          setSnackbarSeverity("error");
+          setSnackbarMessage(error.response?.data?.mssg || "Failed to update task");
+        }
+      } catch (error) {
+        console.error("Error collecting User Data:", error);
+      }
     };
 
     return (
@@ -185,8 +242,10 @@ const Home = () => {
           users: task.users.map((user) => user.email), // Assuming 'users' field contains an array of user objects
         }));
         // Filter tasks assigned to the current user
-        const assignedToMeTasks = formattedTaskData.filter((task) =>
-          task.users.some((userEmail) => userEmail === storedEmail)
+        const assignedToMeTasks = formattedTaskData.filter(
+          (task) =>
+            task.users.some((userEmail) => userEmail === storedEmail) &&
+            task.status !== "Completed"
         );
 
         const unassignedTasks = formattedTaskData.filter(
@@ -200,9 +259,15 @@ const Home = () => {
         setAssignedToMeRowData(assignedToMeTasks);
         setUnassignedRowData(unassignedTasks);
         setCompletedRowData(completedTasks);
+        setOpenSnackbar(true);
+        setSnackbarSeverity("success");
+        setSnackbarMessage("Data loaded from DB successfully"); // Set success message from response
       })
       .catch((error) => {
         console.error("Error fetching tasks:", error);
+        setOpenSnackbar(true);
+        setSnackbarSeverity("error");
+        setSnackbarMessage(error.response.data.mssg); // Set success message from response
       });
   }, []);
 
@@ -291,6 +356,21 @@ const Home = () => {
           </TabPanel>
         </Row>
       </Container>
+      <Snackbar
+        open={openSnackbar}
+        autoHideDuration={6000}
+        onClose={handleCloseSnackbar}
+        anchorOrigin={{ vertical: "top", horizontal: "right" }}
+      >
+        <MuiAlert
+          elevation={6}
+          variant="filled"
+          onClose={handleCloseSnackbar}
+          severity={snackbarSeverity} // Severity can be success, error, warning, info
+        >
+          {snackbarMessage}
+        </MuiAlert>
+      </Snackbar>
       <OpenTaskModal
         open={openModal}
         handleClose={handleCloseModal}
