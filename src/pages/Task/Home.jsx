@@ -74,7 +74,7 @@ const Home = () => {
       // Example of submitting taskData to backend
       try {
         const response = await axios.patch(
-          `http://localhost:4000/api/tasks/${data._id}`,
+          `https://taskserver-99hb.onrender.com/api/tasks/${data._id}`,
           data
         );
         console.log("Task updated:", response.data);
@@ -102,7 +102,7 @@ const Home = () => {
       console.log("Data being sent:", data);
 
       try {
-        const response = await axios.get(`http://localhost:4000/api/users`);
+        const response = await axios.get(`https://taskserver-99hb.onrender.com/api/users`);
         console.log("User Data:", response.data);
         const user = response.data.filter(
           (value) => value.email === storedEmail
@@ -229,7 +229,7 @@ const Home = () => {
 
   useEffect(() => {
     axios
-      .get("http://localhost:4000/api/tasks/")
+      .get("https://taskserver-99hb.onrender.com/api/tasks/")
       .then((response) => {
         const tasks = response.data;
         // console.log(storedEmail)
