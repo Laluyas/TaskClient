@@ -55,7 +55,7 @@ export default function SignUp() {
     };
 
     try {
-      const response = await axios.post('http://localhost:4000/api/users/register', user);
+      const response = await axios.post('https://taskserver-99hb.onrender.com/api/users/register', user);
       console.log('User registered successfully:', response.data);
       navigate("/")
       
