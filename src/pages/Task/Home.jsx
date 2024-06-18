@@ -110,7 +110,7 @@ const Home = () => {
         data.users = [user[0]._id];
         try {
           const response = await axios.patch(
-            `http://localhost:4000/api/tasks/${data._id}`,
+            `https://taskserver-99hb.onrender.com/api/tasks/${data._id}`,
             data
           );
           console.log("Task updated:", response.data);
