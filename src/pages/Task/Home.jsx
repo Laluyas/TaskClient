@@ -295,7 +295,9 @@ const Home = () => {
     <>
       <Container>
         <Row>
-          <h2 style={{ margin: "10px 50px" }}>Home Page</h2>
+          <center>
+              <h2 style={{ margin: "10px 0" }}>Home Page</h2>
+          </center>          
         </Row>
         <Row className="mt-5">
           <Box sx={{ borderBottom: 1, borderColor: "divider" }}>
