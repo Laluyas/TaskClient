@@ -130,7 +130,7 @@ const User_Management = () => {
           </div>
         </Row>
         <Row>
-          <div className="ag-theme-quartz-dark" style={{ height: 500 }}>
+          <div className="ag-theme-quartz-dark" style={{ height: 600 }}>
             <AgGridReact
               rowData={rowData}
               columnDefs={[
