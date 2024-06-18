@@ -309,7 +309,7 @@ const Home = () => {
           <TabPanel value={value} index={0}>
             <Row>
               <Col>
-                <div className="ag-theme-quartz-dark" style={{ height: 500 }}>
+                <div className="ag-theme-quartz-dark" style={{ height: 600 }}>
                   <AgGridReact
                     rowData={assignedToMeRowData}
                     columnDefs={assignedToMeColDef}
@@ -324,7 +324,7 @@ const Home = () => {
           <TabPanel value={value} index={1}>
             <Row>
               <Col>
-                <div className="ag-theme-quartz-dark" style={{ height: 500 }}>
+                <div className="ag-theme-quartz-dark" style={{ height: 600 }}>
                   <AgGridReact
                     rowData={unassignedRowData}
                     columnDefs={unAssignedColDef}
@@ -339,7 +339,7 @@ const Home = () => {
           <TabPanel value={value} index={2}>
             <Row>
               <Col>
-                <div className="ag-theme-quartz-dark" style={{ height: 500 }}>
+                <div className="ag-theme-quartz-dark" style={{ height: 600 }}>
                   <AgGridReact
                     rowData={completedRowData}
                     columnDefs={completedColDef}
