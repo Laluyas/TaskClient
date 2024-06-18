@@ -25,7 +25,7 @@ const User_Management = () => {
     const handleDelete = async () => {
       try {
         const response = await axios.delete(
-          `http://localhost:4000/api/users/${props.data._id}`
+          `https://taskserver-99hb.onrender.com/api/users/${props.data._id}`
         );
         console.log("User deleted:", response.data);
         setOpenSnackbar(true);
@@ -89,7 +89,7 @@ const User_Management = () => {
 
   useEffect(() => {
     axios
-      .get("http://localhost:4000/api/users/")
+      .get("https://taskserver-99hb.onrender.com/api/users/")
       .then((response) => {
         setRowData(response.data);
         console.log(response.data);
