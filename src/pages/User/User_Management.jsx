@@ -113,7 +113,9 @@ const User_Management = () => {
     <>
       <Container>
         <Row>
-          <h2 style={{ margin: "10px 50px" }}>User Management</h2>
+          <center>
+              <h2 style={{ margin: "10px 0" }}>User Management</h2>
+          </center>  
         </Row>
         <Row>
           <div className="d-flex justify-content-end">
