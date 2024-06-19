@@ -17,11 +17,12 @@ import MuiAlert from "@mui/material/Alert";
 
 const roles = ["Manager", "Employee"]; // Define available roles
 
-const EditUserModal = ({ open, handleClose, userId }) => {
+const EditUserModal = ({ open, handleClose, userId, setRowData }) => {
   const theme = useTheme();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [selectedRoles, setSelectedRoles] = useState([]);
+  const [id, setid] = useState("");
 
   // Fetch user data for editing on component mount
   useEffect(() => {
@@ -31,8 +32,10 @@ const EditUserModal = ({ open, handleClose, userId }) => {
         .get(`https://taskserver-99hb.onrender.com/api/users/${userId}`)
         .then((response) => {
           const userData = response.data;
+          setid(userData._id)          
           setEmail(userData.email);
           setSelectedRoles(userData.role);
+          // console.log(userData._id)
         })
         .catch((error) => {
           console.error("Error fetching user data:", error);
@@ -64,19 +67,25 @@ const EditUserModal = ({ open, handleClose, userId }) => {
 
   const handleSubmit = async (event) => {
     event.preventDefault();
-    const user = {
+    const UpdatedUser = {
+      _id: id,
       email: email,
       password: password,
       role: selectedRoles,
     };
-    console.log(user)
+    console.log(UpdatedUser)
     try {
       const response = await axios.patch(
         `https://taskserver-99hb.onrender.com/api/users/${userId}`,
-        user
+        UpdatedUser
       );
       setOpenSnackbar(true);
       handleOpenSnackbar("User updated successfully!", "success");
+      setRowData((prevRowData) =>
+        prevRowData.map((user) =>
+          user._id === UpdatedUser._id ? UpdatedUser : user
+        )
+      );
       // Reset form fields and close modal
       setPassword("");
       handleClose();

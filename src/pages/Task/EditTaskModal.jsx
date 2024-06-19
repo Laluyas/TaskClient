@@ -20,8 +20,9 @@ const categories = ["Work", "Personal", "Study", "Others"]; // Define available 
 const priorities = ["High", "Medium", "Low"]; // Define priority levels
 const statuses = ["Pending", "In Progress", "Completed"]; // Define status options
 
-const EditTaskModal = ({ open, handleClose, taskId }) => {
+const EditTaskModal = ({ open, handleClose, taskId , setRowData}) => {
   const theme = useTheme();
+  const [id, setid] = useState("");
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [dueDate, setDueDate] = useState("");
@@ -48,16 +49,17 @@ const EditTaskModal = ({ open, handleClose, taskId }) => {
         const response = await axios.get(
           `https://taskserver-99hb.onrender.com/api/tasks/${taskId}`
         );
-        const taskData = response.data; // Assuming response.data is an object with task details
-        console.log(taskData);
-        if (taskData) {
-          setTitle(taskData.title);
-          setDescription(taskData.description);
-          setDueDate(new Date(taskData.dueDate).toISOString().substring(0, 10));
-          setPriority(priorities[taskData.priority - 1]); // Adjust priority based on taskData.priority
-          setCategory(taskData.category);
-          setStatus(taskData.status);
-          setAssignedTo(taskData.users); // Assuming taskData.users is an array of user objects
+        const task = response.data; // Assuming response.data is an object with task details
+        console.log(task);
+        if (task) {
+          setid(task._id)
+          setTitle(task.title);
+          setDescription(task.description);
+          setDueDate(new Date(task.dueDate).toISOString().substring(0, 10));
+          setPriority(priorities[task.priority - 1]); // Adjust priority based on taskData.priority
+          setCategory(task.category);
+          setStatus(task.status);
+          setAssignedTo(task.users); // Assuming taskData.users is an array of user objects
         }
       } catch (error) {
         console.error("Error fetching task:", error);
@@ -90,6 +92,7 @@ const EditTaskModal = ({ open, handleClose, taskId }) => {
     const selectedUserIDs = assignedTo.map((user) => user._id);
 
     const taskData = {
+      _id: id,
       title: title,
       description: description,
       dueDate: dueDate,
@@ -108,6 +111,11 @@ const EditTaskModal = ({ open, handleClose, taskId }) => {
         taskData
       );
       console.log("Task updated:", response.data);
+      setRowData((prevRowData) =>
+        prevRowData.map((task) =>
+          task._id === taskData._id ? taskData : task
+        )
+      );
       setOpenSnackbar(true);
       setSnackbarSeverity("success");
       setSnackbarMessage(response.data.mssg); // Set success message from response

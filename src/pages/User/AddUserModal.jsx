@@ -17,7 +17,7 @@ import MuiAlert from "@mui/material/Alert";
 
 const roles = ["Manager", "Employee"]; // Define available roles
 
-const AddUserModal = ({ open, handleClose }) => {
+const AddUserModal = ({ open, handleClose, setRowData }) => {
   const theme = useTheme();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -46,17 +46,19 @@ const AddUserModal = ({ open, handleClose }) => {
 
   const handleSubmit = async (event) => {
     event.preventDefault();
-    const user = {
-      email: email,
-      password: password,
-      role: selectedRoles,
-    };
-    console.log("New User Data:", user);
     try {
       const response = await axios.post(
         "https://taskserver-99hb.onrender.com/api/users/register",
         user
       );
+      const user = {
+        _id: response.data.id,
+        email: email,
+        password: password,
+        role: selectedRoles,
+      };
+      console.log(user)
+      setRowData((prevRowData) => [...prevRowData, user])
       setOpenSnackbar(true);
       handleOpenSnackbar("User registered successfully!", "success");
       handleClose();

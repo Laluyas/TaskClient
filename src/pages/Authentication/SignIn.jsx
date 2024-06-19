@@ -16,18 +16,12 @@ import MuiAlert from "@mui/material/Alert";
 import { createTheme, ThemeProvider } from "@mui/material/styles";
 import axios from "axios";
 import { Link as RouterLink, useNavigate } from "react-router-dom";
-import { useState } from "react";
-import { useEffect } from "react";
+import { useState, useEffect } from "react";
 
 // Copyright component
 function Copyright(props) {
   return (
-    <Typography
-      variant="body2"
-      color="text.secondary"
-      align="center"
-      {...props}
-    >
+    <Typography variant="body2" color="text.secondary" align="center" {...props}>
       {"Copyright © "}
       <Link color="inherit" href="https://mui.com/">
         Task Manager
@@ -46,19 +40,18 @@ export default function SignIn() {
   const [openSnackbar, setOpenSnackbar] = useState(false);
   const [snackbarSeverity, setSnackbarSeverity] = useState("success");
   const [snackbarMessage, setSnackbarMessage] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [emailError, setEmailError] = useState(false);
+  const [passwordError, setPasswordError] = useState(false);
 
   const navigate = useNavigate();
-  const [openError, setOpenError] = useState(false);
-  const [errorMessage, setErrorMessage] = useState("");
-  const [openSuccess, setOpenSuccess] = useState(false); // State for success Snackbar
 
   //Test if DB connection is working fine
   useEffect(() => {
     const fetchUsers = async () => {
       try {
-        const response = await axios.get(
-          "https://taskserver-99hb.onrender.com/api/users"
-        );
+        const response = await axios.get("https://taskserver-99hb.onrender.com/api/users");
         setOpenSnackbar(true);
         setSnackbarSeverity("success");
         setSnackbarMessage("Client is connected to Server"); // Set success message from response
@@ -73,7 +66,6 @@ export default function SignIn() {
     fetchUsers();
   }, []);
 
-
   const handleCloseSnackbar = (event, reason) => {
     if (reason === "clickaway") {
       return;
@@ -83,38 +75,61 @@ export default function SignIn() {
 
   const handleSubmit = async (event) => {
     event.preventDefault();
-    const data = new FormData(event.currentTarget);
 
-    const formData = {
-      email: data.get("email"),
-      password: data.get("password"),
-    };
+    // Front-end validation
+    let valid = true;
 
-    // Store email in local storage
-    localStorage.setItem("email", data.get("email"));
+    if (!email) {
+      setEmailError(true);
+      valid = false;
+    } else {
+      setEmailError(false);
+    }
 
-    try {
-      const response = await axios.post(
-        "https://taskserver-99hb.onrender.com/api/users/login",
-        formData
-      );
-      console.log(response.data);
-      if (response) {
-        setOpenSnackbar(true);
-        setSnackbarSeverity("success");
-        setSnackbarMessage(response.data.mssg); // Set success message from response
-        setTimeout(() => {
-          navigate("/authenticated/home");
-        }, 1500); // Navigate after 3 seconds
-      }
-    } catch (error) {
-      console.error("There was an error!", error);
+    if (!password) {
+      setPasswordError(true);
+      valid = false;
+    } else {
+      setPasswordError(false);
+    }
+
+    if (!valid) {
       setOpenSnackbar(true);
       setSnackbarSeverity("error");
-      setSnackbarMessage(error.response.data.mssg); // Set success message from response
-      
+      setSnackbarMessage("Please fill in all required fields");
+      return;
     }
-  };
+    if(valid){
+      const formData = {
+        email: email,
+        password: password,
+      };
+  
+      // Store email in local storage
+      localStorage.setItem("email", email);
+  
+      try {
+        const response = await axios.post(
+          "https://taskserver-99hb.onrender.com/api/users/login",
+          formData
+        );
+        console.log(response.data);
+        if (response) {
+          setOpenSnackbar(true);
+          setSnackbarSeverity("success");
+          setSnackbarMessage(response.data.mssg); // Set success message from response
+          setTimeout(() => {
+            navigate("/authenticated/home");
+          }, 1500); // Navigate after 1.5 seconds
+        }
+      } catch (error) {
+        console.error("There was an error!", error);
+        setOpenSnackbar(true);
+        setSnackbarSeverity("error");
+        setSnackbarMessage(error.response.data.mssg); // Set error message from response
+      }
+    };
+    }   
 
   return (
     <ThemeProvider theme={defaultTheme}>
@@ -134,12 +149,7 @@ export default function SignIn() {
           <Typography component="h1" variant="h5">
             Sign in
           </Typography>
-          <Box
-            component="form"
-            onSubmit={handleSubmit}
-            noValidate
-            sx={{ mt: 1 }}
-          >
+          <Box component="form" onSubmit={handleSubmit} noValidate sx={{ mt: 1 }}>
             <TextField
               margin="normal"
               required
@@ -149,6 +159,11 @@ export default function SignIn() {
               name="email"
               autoComplete="email"
               autoFocus
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              onClick={()=>setEmailError(false)}
+              error={emailError}
+              helperText={emailError ? "Email is required" : ""}
             />
             <TextField
               margin="normal"
@@ -159,18 +174,17 @@ export default function SignIn() {
               type="password"
               id="password"
               autoComplete="current-password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              onClick={()=>setPasswordError(false)}
+              error={passwordError}
+              helperText={passwordError ? "Password is required" : ""}
             />
-
             <FormControlLabel
               control={<Checkbox value="remember" color="primary" />}
               label="Remember me"
             />
-            <Button
-              type="submit"
-              fullWidth
-              variant="contained"
-              sx={{ mt: 3, mb: 2 }}
-            >
+            <Button type="submit" fullWidth variant="contained" sx={{ mt: 3, mb: 2 }}>
               Sign In
             </Button>
             <Grid container>

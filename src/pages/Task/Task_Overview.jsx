@@ -203,7 +203,7 @@ const Task_Overview = () => {
       </Container>
       <Snackbar
         open={openSnackbar}
-        autoHideDuration={6000}
+        autoHideDuration={3000}
         onClose={handleCloseSnackbar}
         anchorOrigin={{ vertical: "top", horizontal: "right" }}
       >
@@ -216,11 +216,12 @@ const Task_Overview = () => {
           {snackbarMessage}
         </MuiAlert>
       </Snackbar>
-      <AddTaskModal open={openAddModal} handleClose={handleAddCloseModal} />
+      <AddTaskModal open={openAddModal} handleClose={handleAddCloseModal} setRowData={setRowData}/>
       <EditTaskModal
         open={openEditModal}
         handleClose={handleEditCloseModal}
         taskId={selectedTaskId}
+        setRowData={setRowData}
       />
       {/* Render other components related to task management */}
     </>

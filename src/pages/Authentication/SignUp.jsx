@@ -35,42 +35,78 @@ function Copyright(props) {
 const defaultTheme = createTheme();
 
 export default function SignUp() {
-
-  const navigate = useNavigate()
+  const navigate = useNavigate();
   const [role, setRole] = React.useState([]);
   const [openSnackbar, setOpenSnackbar] = useState(false);
   const [snackbarSeverity, setSnackbarSeverity] = useState("success");
   const [snackbarMessage, setSnackbarMessage] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [emailError, setEmailError] = useState(false);
+  const [passwordError, setPasswordError] = useState(false);
+  const [roleError, setRoleError] = useState(false);
 
   const handleRoleChange = (event) => {
     const { value } = event.target;
     setRole(typeof value === 'string' ? value.split(',') : value);
+    setRoleError(false);
   };
 
   const handleSubmit = async (event) => {
     event.preventDefault();
-    const data = new FormData(event.currentTarget);
-    const user = {
-      email: data.get('email'),
-      password: data.get('password'),
-      role: role,
-    };
 
-    try {
-      const response = await axios.post('https://taskserver-99hb.onrender.com/api/users/register', user);
-      console.log('User registered successfully:', response.data);
-      navigate("/")
+    // Front-end validation
+    let valid = true;
+
+    if (!email) {
+      setEmailError(true);
+      valid = false;
+    } else {
+      setEmailError(false);
+    }
+
+    if (!password) {
+      setPasswordError(true);
+      valid = false;
+    } else {
+      setPasswordError(false);
+    }
+
+    if (role.length === 0) {
+      setRoleError(true);
+      valid = false;
+    } else {
+      setRoleError(false);
+    }
+
+    if (!valid) {
       setOpenSnackbar(true);
-      setSnackbarSeverity("success");
-      setSnackbarMessage(response.data.mssg); // Set success message from response
-    } catch (error) {
-      console.error('Error registering user:', error);
+      setSnackbarSeverity("error");
+      setSnackbarMessage("Please fill in all required fields");
+      return;
+    }
+    if(valid){
+      const user = {
+        email: email,
+        password: password,
+        role: role,
+      };
+  
+      try {
+        const response = await axios.post('https://taskserver-99hb.onrender.com/api/users/register', user);
+        console.log('User registered successfully:', response.data);
+        navigate("/");
+        setOpenSnackbar(true);
+        setSnackbarSeverity("success");
+        setSnackbarMessage(response.data.mssg); // Set success message from response
+      } catch (error) {
+        console.error('Error registering user:', error);
         setOpenSnackbar(true);
         setSnackbarSeverity("error");
-        setSnackbarMessage(error.response.data.mssg); // Set success message from response
-        console.log(error)
-    }
-  };
+        setSnackbarMessage(error.response.data.mssg); // Set error message from response
+      }
+    };
+    }   
 
   const handleCloseSnackbar = (event, reason) => {
     if (reason === "clickaway") {
@@ -107,6 +143,11 @@ export default function SignUp() {
                   label="Email Address"
                   name="email"
                   autoComplete="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  onClick={()=>setEmailError(false)}
+                  error={emailError}
+                  helperText={emailError ? "Email is required" : ""}
                 />
               </Grid>
               <Grid item xs={12}>
@@ -118,10 +159,15 @@ export default function SignUp() {
                   type="password"
                   id="password"
                   autoComplete="new-password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  onClick={()=>setPasswordError(false)}
+                  error={passwordError}
+                  helperText={passwordError ? "Password is required" : ""}
                 />
               </Grid>
               <Grid item xs={12}>
-                <FormControl fullWidth>
+                <FormControl fullWidth error={roleError}>
                   <InputLabel id="role-label">Role</InputLabel>
                   <Select
                     labelId="role-label"
@@ -143,6 +189,7 @@ export default function SignUp() {
                     <MenuItem value="Manager">Manager</MenuItem>
                     <MenuItem value="Employee">Employee</MenuItem>
                   </Select>
+                  {roleError && <Typography color="error" style={{fontSize:"12px", padding:"3px 16px"}}>Role is required</Typography>}
                 </FormControl>
               </Grid>
               <Grid item xs={12}>
@@ -173,7 +220,7 @@ export default function SignUp() {
       </Container>
       <Snackbar
         open={openSnackbar}
-        autoHideDuration={6000}
+        autoHideDuration={3000}
         onClose={handleCloseSnackbar}
         anchorOrigin={{ vertical: "top", horizontal: "right" }}
       >

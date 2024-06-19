@@ -28,6 +28,9 @@ const User_Management = () => {
           `https://taskserver-99hb.onrender.com/api/users/${props.data._id}`
         );
         console.log("User deleted:", response.data);
+        setRowData((prevRowData) =>
+          prevRowData.filter((user) => user._id !== props.data._id)
+        );
         setOpenSnackbar(true);
         setSnackbarSeverity("success");
         setSnackbarMessage(response.data.mssg); // Set success message from response
@@ -147,7 +150,7 @@ const User_Management = () => {
         </Row>
         <Snackbar
           open={openSnackbar}
-          autoHideDuration={6000}
+          autoHideDuration={3000}
           onClose={handleCloseSnackbar}
           anchorOrigin={{ vertical: "top", horizontal: "right" }}
         >
@@ -160,11 +163,12 @@ const User_Management = () => {
             {snackbarMessage}
           </MuiAlert>
         </Snackbar>
-        <AddUserModal open={AddopenModal} handleClose={handleAddCloseModal} />
+        <AddUserModal open={AddopenModal} handleClose={handleAddCloseModal} setRowData={setRowData}/>
         <EditUserModal
           open={EditopenModal}
           handleClose={handleEditCloseModal}
           userId={selectedUserId} // Pass selected user ID to EditUserModal
+          setRowData={setRowData}
         />
         {/* Render modal component */}
       </Container>
