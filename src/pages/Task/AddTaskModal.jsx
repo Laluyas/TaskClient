@@ -90,6 +90,7 @@ const AddTaskModal = ({ open, handleClose , setRowData}) => {
         "https://taskserver-99hb.onrender.com/api/tasks",
         taskData
       );
+      taskData._id = response.data.id
       console.log("Task created:", response.data);
       setRowData((prevRowData) => [...prevRowData, taskData])
       setOpenSnackbar(true);

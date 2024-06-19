@@ -46,18 +46,18 @@ const AddUserModal = ({ open, handleClose, setRowData }) => {
 
   const handleSubmit = async (event) => {
     event.preventDefault();
+    const user = {
+      email: email,
+      password: password,
+      role: selectedRoles,
+    };
     try {
       const response = await axios.post(
         "https://taskserver-99hb.onrender.com/api/users/register",
         user
-      );
-      const user = {
-        _id: response.data.id,
-        email: email,
-        password: password,
-        role: selectedRoles,
-      };
-      console.log(user)
+      ); 
+      user._id = response.data.id     
+      console.log(response)
       setRowData((prevRowData) => [...prevRowData, user])
       setOpenSnackbar(true);
       handleOpenSnackbar("User registered successfully!", "success");
