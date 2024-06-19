@@ -65,6 +65,9 @@ const Task_Overview = () => {
       axios
         .delete(`https://taskserver-99hb.onrender.com/api/tasks/${data._id}`)
         .then((response) => {
+          setRowData((prevRowData) =>
+            prevRowData.filter((task) => task._id !== data._id)
+          );
           setOpenSnackbar(true);
           setSnackbarSeverity("success");
           setSnackbarMessage("Delete successful for task row with ID: " + data._id); // Set success message from response
