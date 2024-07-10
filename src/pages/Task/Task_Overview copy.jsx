@@ -13,7 +13,7 @@ import MuiAlert from "@mui/material/Alert";
 const Task_Overview = () => {
   // Row Data: The data to be displayed.
   const [rowData, setRowData] = useState([]);
-  const [selectedTaskId, setSelectedTaskId] = useState(null); // State to hold selected Task ID
+  const [selectedTask, setSelectedTask] = useState(null); // State to hold selected Task object
 
   const [openAddModal, setAddOpenModal] = useState(false);
   const [openEditModal, setEditOpenModal] = useState(false);
@@ -21,7 +21,6 @@ const Task_Overview = () => {
   const [openSnackbar, setOpenSnackbar] = useState(false);
   const [snackbarSeverity, setSnackbarSeverity] = useState("success");
   const [snackbarMessage, setSnackbarMessage] = useState("");
-  
 
   const handleAddOpenModal = () => {
     setAddOpenModal(true);
@@ -48,7 +47,7 @@ const Task_Overview = () => {
 
   const CustomEditButtonComponent = ({ data }) => {
     const handleEdit = () => {
-      setSelectedTaskId(data._id);
+      setSelectedTask(data);
       handleEditOpenModal();
     };
 
@@ -61,10 +60,12 @@ const Task_Overview = () => {
 
   const CustomDeleteButtonComponent = ({ data }) => {
     const handleDelete = () => {
-      // Make sure to replace 'http://localhost:4000' with your actual backend URL
       axios
         .delete(`https://taskserver-99hb.onrender.com/api/tasks/${data._id}`)
         .then((response) => {
+          setRowData((prevRowData) =>
+            prevRowData.filter((task) => task._id !== data._id)
+          );
           setOpenSnackbar(true);
           setSnackbarSeverity("success");
           setSnackbarMessage("Delete successful for task row with ID: " + data._id); // Set success message from response
@@ -84,14 +85,11 @@ const Task_Overview = () => {
     );
   };
 
-  // Custom date formatter function
   const dateFormatter = (params) => {
-    // Assuming params.value is in ISO format like "2024-06-15T12:00:00Z"
     const dateObj = new Date(params.value);
-    return dateObj.toLocaleDateString(); // Customize the format using toLocaleDateString options
+    return dateObj.toLocaleDateString();
   };
 
-  // Priority formatter function
   const priorityFormatter = (params) => {
     switch (params.value) {
       case 1:
@@ -105,14 +103,12 @@ const Task_Overview = () => {
     }
   };
 
-  // Column Definitions: Defines the columns to be displayed.
   const [colDefs, setColDefs] = useState([
     { field: "title", filter: true },
     { field: "description", filter: true },
     { field: "dueDate", filter: true, valueFormatter: dateFormatter },
     { field: "priority", filter: true, valueFormatter: priorityFormatter },
     { field: "status", filter: true },
-    //{ field: "category", filter: true },
     {
       headerName: "Assigned To",
       field: "users",
@@ -130,33 +126,27 @@ const Task_Overview = () => {
     { headerName: "Delete", cellRenderer: CustomDeleteButtonComponent },
   ]);
 
-  // Fetch task details with Axios
   useEffect(() => {
     axios
-      .get("https://taskserver-99hb.onrender.com/api/tasks/") // Replace with your API endpoint
+      .get("https://taskserver-99hb.onrender.com/api/tasks/")
       .then((response) => {
-        // Map over response data and format 'users' field if needed
         const formattedData = response.data.map((task) => ({
           ...task,
-          users: task.users.map((user) => user.email), // Assuming 'users' field contains an array of user objects
+          users: task.users.map((user) => user.email),
         }));
         setRowData(formattedData);
-        console.log(response.data);
         setOpenSnackbar(true);
         setSnackbarSeverity("success");
-        setSnackbarMessage("Tasks loaded from Database successfully"); // Set success message from response
+        setSnackbarMessage("Tasks loaded from Database successfully");
       })
       .catch((error) => {
         console.error("There was an error fetching the task data!", error);
         setOpenSnackbar(true);
         setSnackbarSeverity("error");
-        setSnackbarMessage(
-          "There was an error fetching the task data from Database!"
-        ); // Set error message from response
+        setSnackbarMessage("There was an error fetching the task data from Database!");
       });
   }, []);
 
-  // Pagination settings
   const pagination = true;
   const paginationPageSize = 500;
   const paginationPageSizeSelector = [200, 500, 1000];
@@ -166,8 +156,8 @@ const Task_Overview = () => {
       <Container>
         <Row>
           <center>
-              <h2 style={{ margin: "10px 0" }}>Task Overview</h2>
-          </center>  
+            <h2 style={{ margin: "10px 0" }}>Task Overview</h2>
+          </center>
         </Row>
         <Row>
           <div className="d-flex justify-content-end">
@@ -184,8 +174,8 @@ const Task_Overview = () => {
         <Row>
           <Col>
             <div
-              className="ag-theme-quartz-dark" // applying the grid theme
-              style={{ height: 600 }} // the grid will fill the size of the parent container
+              className="ag-theme-quartz-dark"
+              style={{ height: 600 }}
             >
               <AgGridReact
                 rowData={rowData}
@@ -200,7 +190,7 @@ const Task_Overview = () => {
       </Container>
       <Snackbar
         open={openSnackbar}
-        autoHideDuration={6000}
+        autoHideDuration={3000}
         onClose={handleCloseSnackbar}
         anchorOrigin={{ vertical: "top", horizontal: "right" }}
       >
@@ -208,18 +198,18 @@ const Task_Overview = () => {
           elevation={6}
           variant="filled"
           onClose={handleCloseSnackbar}
-          severity={snackbarSeverity} // Severity can be success, error, warning, info
+          severity={snackbarSeverity}
         >
           {snackbarMessage}
         </MuiAlert>
       </Snackbar>
-      <AddTaskModal open={openAddModal} handleClose={handleAddCloseModal} />
+      <AddTaskModal open={openAddModal} handleClose={handleAddCloseModal} setRowData={setRowData} />
       <EditTaskModal
         open={openEditModal}
         handleClose={handleEditCloseModal}
-        taskId={selectedTaskId}
+        selectedTask={selectedTask}
+        setRowData={setRowData}
       />
-      {/* Render other components related to task management */}
     </>
   );
 };
