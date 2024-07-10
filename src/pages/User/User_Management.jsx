@@ -18,7 +18,7 @@ const User_Management = () => {
   const [snackbarMessage, setSnackbarMessage] = useState("");
   const [AddopenModal, setAddOpenModal] = useState(false); // State for modal open/close
   const [EditopenModal, setEditOpenModal] = useState(false); // State for modal open/close
-  const [selectedUserId, setSelectedUserId] = useState(null); // State to hold selected user ID
+  const [selectedUser, setSelectedUser] = useState(null); // State to hold selected user ID
 
   // Custom Delete Button Component
   const CustomDeleteButtonComponent = (props) => {
@@ -54,7 +54,7 @@ const User_Management = () => {
   // Custom Edit Button Component
   const CustomEditButtonComponent = (props) => {
     const handleEdit = async () => {
-      setSelectedUserId(props.data._id); // Set the selected user ID
+      setSelectedUser(props.data); // Set the selected user ID
       handleEditOpenModal(); // Open edit modal
     };
 
@@ -167,7 +167,7 @@ const User_Management = () => {
         <EditUserModal
           open={EditopenModal}
           handleClose={handleEditCloseModal}
-          userId={selectedUserId} // Pass selected user ID to EditUserModal
+          selectedUser={selectedUser} // Pass selected user ID to EditUserModal
           setRowData={setRowData}
         />
         {/* Render modal component */}

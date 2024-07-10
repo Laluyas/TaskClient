@@ -240,16 +240,20 @@ const AddTaskModal = ({ open, handleClose , setRowData}) => {
                   )}
                 />
               </Grid>
+              <Grid item xs={12}>
+                <Button type="submit" variant="contained" color="primary">
+                  Save
+                </Button>
+                <Button
+                  onClick={handleClose}
+                  variant="contained"
+                  color="warning"
+                  sx={{ ml: 2 }}
+                >
+                  Cancel
+                </Button>
+              </Grid>
             </Grid>
-            <Button
-              type="submit"
-              variant="contained"
-              color="primary"
-              fullWidth
-              sx={{ mt: 2 }}
-            >
-              Create Task
-            </Button>
           </form>
         </Box>
       </Modal>

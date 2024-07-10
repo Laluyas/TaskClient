@@ -77,6 +77,10 @@ const Home = () => {
           `https://taskserver-99hb.onrender.com/api/tasks/${data._id}`,
           data
         );
+        setAssignedToMeRowData((prevRowData) =>
+          prevRowData.filter((task) => task._id !== data._id)
+        );
+        setUnassignedRowData((prevRowData) => [...prevRowData, data]);
         console.log("Task updated:", response.data);
         setOpenSnackbar(true);
         setSnackbarSeverity("success");
@@ -98,11 +102,12 @@ const Home = () => {
 
   const CustomAssignButtonComponent = ({ data }) => {
     const handleEdit = async () => {
-
       console.log("Data being sent:", data);
 
       try {
-        const response = await axios.get(`https://taskserver-99hb.onrender.com/api/users`);
+        const response = await axios.get(
+          `https://taskserver-99hb.onrender.com/api/users`
+        );
         console.log("User Data:", response.data);
         const user = response.data.filter(
           (value) => value.email === storedEmail
@@ -113,6 +118,8 @@ const Home = () => {
             `https://taskserver-99hb.onrender.com/api/tasks/${data._id}`,
             data
           );
+          setAssignedToMeRowData((prevRowData) => [...prevRowData, data]);
+          setUnassignedRowData((prevRowData) => prevRowData.filter((task) => task._id !== data._id))
           console.log("Task updated:", response.data);
           setOpenSnackbar(true);
           setSnackbarSeverity("success");
@@ -121,7 +128,9 @@ const Home = () => {
           console.error("Error updating task:", error);
           setOpenSnackbar(true);
           setSnackbarSeverity("error");
-          setSnackbarMessage(error.response?.data?.mssg || "Failed to update task");
+          setSnackbarMessage(
+            error.response?.data?.mssg || "Failed to update task"
+          );
         }
       } catch (error) {
         console.error("Error collecting User Data:", error);

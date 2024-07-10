@@ -17,32 +17,20 @@ import MuiAlert from "@mui/material/Alert";
 
 const roles = ["Manager", "Employee"]; // Define available roles
 
-const EditUserModal = ({ open, handleClose, userId, setRowData }) => {
+const EditUserModal = ({ open, handleClose, selectedUser, setRowData }) => {
   const theme = useTheme();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [selectedRoles, setSelectedRoles] = useState([]);
   const [id, setid] = useState("");
 
-  // Fetch user data for editing on component mount
   useEffect(() => {
-    if (open && userId) {
-      // Fetch user details from API using userId
-      axios
-        .get(`https://taskserver-99hb.onrender.com/api/users/${userId}`)
-        .then((response) => {
-          const userData = response.data;
-          setid(userData._id)          
-          setEmail(userData.email);
-          setSelectedRoles(userData.role);
-          // console.log(userData._id)
-        })
-        .catch((error) => {
-          console.error("Error fetching user data:", error);
-          // Handle error if needed
-        });
+    if (selectedUser) {
+      setid(selectedUser._id);
+      setEmail(selectedUser.email);
+      setSelectedRoles(selectedUser.role);
     }
-  }, [open, userId]);
+  }, [selectedUser]);
 
   const handleRoleChange = (event) => {
     setSelectedRoles(event.target.value);
@@ -60,9 +48,10 @@ const EditUserModal = ({ open, handleClose, userId, setRowData }) => {
 
   const handleCloseSnackbar = (event, reason) => {
     if (reason === "clickaway") {
-      return;
+      setOpenSnackbar(false);
+
+      return;      
     }
-    setOpenSnackbar(false);
   };
 
   const handleSubmit = async (event) => {
@@ -73,10 +62,10 @@ const EditUserModal = ({ open, handleClose, userId, setRowData }) => {
       password: password,
       role: selectedRoles,
     };
-    console.log(UpdatedUser)
+    console.log(UpdatedUser);
     try {
       const response = await axios.patch(
-        `https://taskserver-99hb.onrender.com/api/users/${userId}`,
+        `https://taskserver-99hb.onrender.com/api/users/${selectedUser._id}`,
         UpdatedUser
       );
       setOpenSnackbar(true);

@@ -16,21 +16,21 @@ import Autocomplete from "@mui/material/Autocomplete";
 import Snackbar from "@mui/material/Snackbar";
 import MuiAlert from "@mui/material/Alert";
 
-const categories = ["Work", "Personal", "Study", "Others"]; // Define available categories
-const priorities = ["High", "Medium", "Low"]; // Define priority levels
-const statuses = ["Pending", "In Progress", "Completed"]; // Define status options
+const categories = ["Work", "Personal", "Study", "Others"];
+const priorities = ["High", "Medium", "Low"];
+const statuses = ["Pending", "In Progress", "Completed"];
 
-const EditTaskModal = ({ open, handleClose, taskId , setRowData}) => {
+const EditTaskModal = ({ open, handleClose, selectedTask, setRowData }) => {
   const theme = useTheme();
-  const [id, setid] = useState("");
+  const [id, setId] = useState("");
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [dueDate, setDueDate] = useState("");
-  const [priority, setPriority] = useState("Low"); // Default priority
+  const [priority, setPriority] = useState("Low");
   const [category, setCategory] = useState("");
-  const [status, setStatus] = useState("Pending"); // Default status
-  const [assignedTo, setAssignedTo] = useState([]); // State to hold selected users (array of user objects)
-  const [users, setUsers] = useState([]); // State to hold users list with id and email
+  const [status, setStatus] = useState("Pending");
+  const [assignedTo, setAssignedTo] = useState([]);
+  const [users, setUsers] = useState([]);
 
   const [openSnackbar, setOpenSnackbar] = useState(false);
   const [snackbarSeverity, setSnackbarSeverity] = useState("success");
@@ -44,150 +44,120 @@ const EditTaskModal = ({ open, handleClose, taskId , setRowData}) => {
   };
 
   useEffect(() => {
-    const fetchTask = async () => {
-      try {
-        const response = await axios.get(
-          `https://taskserver-99hb.onrender.com/api/tasks/${taskId}`
-        );
-        const task = response.data; // Assuming response.data is an object with task details
-        console.log(task);
-        if (task) {
-          setid(task._id)
-          setTitle(task.title);
-          setDescription(task.description);
-          setDueDate(new Date(task.dueDate).toISOString().substring(0, 10));
-          setPriority(priorities[task.priority - 1]); // Adjust priority based on taskData.priority
-          setCategory(task.category);
-          setStatus(task.status);
-          setAssignedTo(task.users); // Assuming taskData.users is an array of user objects
-        }
-      } catch (error) {
-        console.error("Error fetching task:", error);
-        setOpenSnackbar(true);
-        setSnackbarSeverity("error");
-        setSnackbarMessage(error.response.data.mssg); // Set error message from response
-      }
-    };
-
     const fetchUsers = async () => {
       try {
-        const response = await axios.get("https://taskserver-99hb.onrender.com/api/users");
-        const userData = response.data; // Assuming response.data is an array of user objects
-        setUsers(userData);
+        const response = await axios.get(
+          "https://taskserver-99hb.onrender.com/api/users/"
+        );
+        setUsers(response.data);
       } catch (error) {
         console.error("Error fetching users:", error);
-        // Handle error, show error message or feedback to the user
       }
     };
 
-    if (open && taskId) {
-      fetchTask();
-      fetchUsers();
+    fetchUsers();
+  }, []);
+
+  useEffect(() => {
+    if (selectedTask) {
+      setId(selectedTask._id);
+      setTitle(selectedTask.title);
+      setDescription(selectedTask.description);
+      setDueDate(selectedTask.dueDate);
+      setPriority(priorities[selectedTask.priority - 1]);
+      setCategory(selectedTask.category);
+      setStatus(selectedTask.status);
+      setAssignedTo(selectedTask.users); // Populate assignedTo with emails
+      
     }
-  }, [open, taskId]);
+  }, [selectedTask]);
 
-  const handleSubmit = async (event) => {
+  const handleEditSubmit = async (event) => {
     event.preventDefault();
-    // Map selected emails to user IDs
-    const selectedUserIDs = assignedTo.map((user) => user._id);
-
+    
     const taskData = {
-      _id: id,
-      title: title,
-      description: description,
-      dueDate: dueDate,
-      priority: priorities.indexOf(priority) + 1, // Map priority string to numeric value
-      category: category,
-      status: status,
-      users: selectedUserIDs, // Array of selected user IDs
+      title,
+      description,
+      dueDate,
+      priority,
+      category,
+      status,
+      users: assignedTo.map((email) =>
+        users.find((user) => user.email === email)._id
+      ),
     };
 
-    console.log("Task data:", taskData);
-
-    // Example of submitting taskData to backend
     try {
-      const response = await axios.patch(
-        `https://taskserver-99hb.onrender.com/api/tasks/${taskId}`,
+      const response = await axios.put(
+        `https://taskserver-99hb.onrender.com/api/tasks/${id}`,
         taskData
       );
-      console.log("Task updated:", response.data);
+      const updatedTask = response.data;
       setRowData((prevRowData) =>
         prevRowData.map((task) =>
-          task._id === taskData._id ? taskData : task
+          task._id === updatedTask._id ? updatedTask : task
         )
       );
       setOpenSnackbar(true);
       setSnackbarSeverity("success");
-      setSnackbarMessage(response.data.mssg); // Set success message from response
+      setSnackbarMessage("Task edited successfully!");
       handleClose();
     } catch (error) {
-      console.error("Error updating task:", error);
+      console.error("Error editing task:", error);
       setOpenSnackbar(true);
       setSnackbarSeverity("error");
-      setSnackbarMessage(error.response.data.mssg); // Set error message from response
+      setSnackbarMessage("Failed to edit task.");
     }
   };
 
   return (
     <>
-      <Modal
-        open={open}
-        onClose={handleClose}
-        aria-labelledby="edit-task-modal-title"
-        aria-describedby="edit-task-modal-description"
-      >
+      <Modal open={open} onClose={handleClose}>
         <Box
           sx={{
+            ...theme.typography.body1,
             position: "absolute",
             top: "50%",
             left: "50%",
             transform: "translate(-50%, -50%)",
-            width: {
-              xs: "90%", // 90% width on extra small screens
-              sm: "80%", // 80% width on small screens
-              md: "60%", // 60% width on medium screens
-              lg: "50%", // 50% width on large screens
-              xl: 800, // 800px width on extra large screens
-            },
-            bgcolor: theme.palette.background.paper,
+            width: 800,
+            bgcolor: "background.paper",
+            border: "2px solid #000",
             boxShadow: 24,
             p: 4,
           }}
         >
-          <h2 id="edit-task-modal-title">Edit Task</h2>
-          <form onSubmit={handleSubmit}>
+          <form onSubmit={handleEditSubmit}>
             <Grid container spacing={2}>
-              {/* First Column */}
               <Grid item xs={12} sm={6}>
                 <TextField
                   label="Title"
-                  variant="outlined"
-                  fullWidth
                   value={title}
                   onChange={(e) => setTitle(e.target.value)}
+                  fullWidth
                   required
                 />
               </Grid>
               <Grid item xs={12} sm={6}>
                 <TextField
                   label="Description"
-                  variant="outlined"
-                  fullWidth
                   value={description}
                   onChange={(e) => setDescription(e.target.value)}
+                  fullWidth
+                  required
                 />
               </Grid>
               <Grid item xs={12} sm={6}>
                 <TextField
                   label="Due Date"
+                  type="date"
+                  value={dueDate}
+                  onChange={(e) => setDueDate(e.target.value)}
+                  fullWidth
+                  required
                   InputLabelProps={{
                     shrink: true,
                   }}
-                  type="date"
-                  variant="outlined"
-                  fullWidth
-                  value={dueDate}
-                  onChange={(e) => setDueDate(e.target.value)}
                 />
               </Grid>
               <Grid item xs={12} sm={6}>
@@ -207,48 +177,42 @@ const EditTaskModal = ({ open, handleClose, taskId , setRowData}) => {
                   </Select>
                 </FormControl>
               </Grid>
-              {/* Second Column */}
               <Grid item xs={12} sm={6}>
-                <FormControl fullWidth>
-                  <InputLabel id="category-label">Category</InputLabel>
+                <FormControl fullWidth required>
+                  <InputLabel>Category</InputLabel>
                   <Select
-                    labelId="category-label"
-                    id="category"
                     value={category}
                     onChange={(e) => setCategory(e.target.value)}
+                    label="Category"
                   >
-                    {categories.map((categoryOption) => (
-                      <MenuItem key={categoryOption} value={categoryOption}>
-                        {categoryOption}
+                    {categories.map((category) => (
+                      <MenuItem key={category} value={category}>
+                        {category}
                       </MenuItem>
                     ))}
                   </Select>
                 </FormControl>
               </Grid>
               <Grid item xs={12} sm={6}>
-                <FormControl fullWidth>
-                  <InputLabel id="status-label">Status</InputLabel>
+                <FormControl fullWidth required>
+                  <InputLabel>Status</InputLabel>
                   <Select
-                    labelId="status-label"
-                    id="status"
                     value={status}
                     onChange={(e) => setStatus(e.target.value)}
+                    label="Status"
                   >
-                    {statuses.map((statusOption) => (
-                      <MenuItem key={statusOption} value={statusOption}>
-                        {statusOption}
+                    {statuses.map((status) => (
+                      <MenuItem key={status} value={status}>
+                        {status}
                       </MenuItem>
                     ))}
                   </Select>
                 </FormControl>
               </Grid>
-              {/* Assigned To */}
               <Grid item xs={12} sm={6}>
                 <Autocomplete
                   multiple
-                  id="assignedTo"
-                  options={users}
-                  getOptionLabel={(option) => option.email}
+                  options={users.map((user) => user.email)}
                   value={assignedTo}
                   onChange={(event, newValue) => {
                     setAssignedTo(newValue);
@@ -256,29 +220,32 @@ const EditTaskModal = ({ open, handleClose, taskId , setRowData}) => {
                   renderInput={(params) => (
                     <TextField
                       {...params}
-                      variant="outlined"
                       label="Assigned To"
-                      placeholder="Select Users"
+                      placeholder="Select users"
                     />
                   )}
                 />
               </Grid>
+              <Grid item xs={12}>
+                <Button type="submit" variant="contained" color="primary">
+                  Save
+                </Button>
+                <Button
+                  onClick={handleClose}
+                  variant="contained"
+                  color="warning"
+                  sx={{ ml: 2 }}
+                >
+                  Cancel
+                </Button>
+              </Grid>
             </Grid>
-            <Button
-              type="submit"
-              variant="contained"
-              color="primary"
-              fullWidth
-              sx={{ mt: 2 }}
-            >
-              Update Task
-            </Button>
           </form>
         </Box>
       </Modal>
       <Snackbar
         open={openSnackbar}
-        autoHideDuration={6000}
+        autoHideDuration={3000}
         onClose={handleCloseSnackbar}
         anchorOrigin={{ vertical: "top", horizontal: "right" }}
       >
@@ -286,7 +253,7 @@ const EditTaskModal = ({ open, handleClose, taskId , setRowData}) => {
           elevation={6}
           variant="filled"
           onClose={handleCloseSnackbar}
-          severity={snackbarSeverity} // Severity can be success, error, warning, info
+          severity={snackbarSeverity}
         >
           {snackbarMessage}
         </MuiAlert>
