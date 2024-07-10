@@ -63,13 +63,13 @@ const EditTaskModal = ({ open, handleClose, selectedTask, setRowData }) => {
       setId(selectedTask._id);
       setTitle(selectedTask.title);
       setDescription(selectedTask.description);
-      setDueDate(selectedTask.dueDate);
+      setDueDate(selectedTask.dueDate.split('T')[0]); // Format date as YYYY-MM-DD
       setPriority(priorities[selectedTask.priority - 1]);
       setCategory(selectedTask.category);
       setStatus(selectedTask.status);
       setAssignedTo(selectedTask.users); // Populate assignedTo with emails
-      
     }
+    console.log(selectedTask);
   }, [selectedTask]);
 
   const handleEditSubmit = async (event) => {
@@ -86,9 +86,10 @@ const EditTaskModal = ({ open, handleClose, selectedTask, setRowData }) => {
         users.find((user) => user.email === email)._id
       ),
     };
+    console.log(taskData)
 
     try {
-      const response = await axios.put(
+      const response = await axios.patch(
         `https://taskserver-99hb.onrender.com/api/tasks/${id}`,
         taskData
       );
