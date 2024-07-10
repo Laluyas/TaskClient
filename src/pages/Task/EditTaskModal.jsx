@@ -86,7 +86,6 @@ const EditTaskModal = ({ open, handleClose, selectedTask, setRowData }) => {
         users.find((user) => user.email === email)._id
       ),
     };
-    console.log(taskData)
 
     try {
       const response = await axios.patch(
