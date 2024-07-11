@@ -20,8 +20,9 @@ const categories = ["Work", "Personal", "Study", "Others"]; // Define available 
 const priorities = ["High", "Medium", "Low"]; // Define priority levels
 const statuses = ["Pending", "In Progress", "Completed"]; // Define status options
 
-const EditTaskModal = ({ open, handleClose, selectedTask }) => {
+const EditTaskModal = ({ open, handleClose, selectedTask , updateRowData}) => {
   const theme = useTheme();
+  const [Id, setId] = useState()
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [dueDate, setDueDate] = useState("");
@@ -29,7 +30,9 @@ const EditTaskModal = ({ open, handleClose, selectedTask }) => {
   const [category, setCategory] = useState("");
   const [status, setStatus] = useState("Pending"); // Default status
   const [assignedTo, setAssignedTo] = useState([]); // State to hold selected users (array of user objects)
-  const [users, setUsers] = useState([]); // State to hold users list with id and email
+  const [users, setusers] = useState()
+  const [usersDropDown, setUsersDropDown] = useState([]); // State to hold users list with id and email
+
 
   const [openSnackbar, setOpenSnackbar] = useState(false);
   const [snackbarSeverity, setSnackbarSeverity] = useState("success");
@@ -44,20 +47,22 @@ const EditTaskModal = ({ open, handleClose, selectedTask }) => {
 
   useEffect(() => {
         if (selectedTask) {
+          setId(selectedTask._id)
           setTitle(selectedTask.title);
           setDescription(selectedTask.description);
           setDueDate(new Date(selectedTask.dueDate).toISOString().substring(0, 10));
           setPriority(priorities[selectedTask.priority - 1]); // Adjust priority based on taskData.priority
           setCategory(selectedTask.category);
           setStatus(selectedTask.status);
-          setAssignedTo(selectedTask.users); // Assuming taskData.users is an array of user objects
+          setAssignedTo(selectedTask.usersEmail); // Assuming taskData.users is an array of user objects
+          setusers(selectedTask.users)
         }
 
     const fetchUsers = async () => {
       try {
         const response = await axios.get("https://taskserver-99hb.onrender.com/api/users");
         const userData = response.data; // Assuming response.data is an array of user objects
-        setUsers(userData);
+        setUsersDropDown(userData);
       } catch (error) {
         console.error("Error fetching users:", error);
         // Handle error, show error message or feedback to the user
@@ -74,13 +79,15 @@ const EditTaskModal = ({ open, handleClose, selectedTask }) => {
     const selectedUserIDs = assignedTo.map((user) => user._id);
 
     const taskData = {
+      _id: Id,
       title: title,
       description: description,
       dueDate: dueDate,
       priority: priorities.indexOf(priority) + 1, // Map priority string to numeric value
       category: category,
       status: status,
-      users: selectedUserIDs, // Array of selected user IDs
+      users: users,
+      usersEmail: selectedUserIDs, // Array of selected user IDs
     };
 
 
@@ -91,7 +98,8 @@ const EditTaskModal = ({ open, handleClose, selectedTask }) => {
         `https://taskserver-99hb.onrender.com/api/tasks/${selectedTask._id}`,
         taskData
       );
-      console.log("Task updated:", response.data);
+      console.log("Task updated:", taskData);
+      updateRowData(taskData)
       setOpenSnackbar(true);
       setSnackbarSeverity("success");
       setSnackbarMessage(response.data.mssg); // Set success message from response
@@ -223,11 +231,11 @@ const EditTaskModal = ({ open, handleClose, selectedTask }) => {
                 <Autocomplete
                   multiple
                   id="assignedTo"
-                  options={users}
+                  options={usersDropDown}
                   getOptionLabel={(option) => option.email}
-                  value={assignedTo}
+                  value={users}
                   onChange={(event, newValue) => {
-                    setAssignedTo(newValue);
+                    setusers(newValue);
                   }}
                   renderInput={(params) => (
                     <TextField
@@ -239,16 +247,21 @@ const EditTaskModal = ({ open, handleClose, selectedTask }) => {
                   )}
                 />
               </Grid>
+              <Grid item xs={12}>
+                <Button type="submit" variant="contained" color="primary">
+                  Save
+                </Button>
+                <Button
+                  onClick={handleClose}
+                  variant="contained"
+                  color="warning"
+                  sx={{ ml: 2 }}
+                >
+                  Cancel
+                </Button>
+              </Grid>
             </Grid>
-            <Button
-              type="submit"
-              variant="contained"
-              color="primary"
-              fullWidth
-              sx={{ mt: 2 }}
-            >
-              Update Task
-            </Button>
+            
           </form>
         </Box>
       </Modal>

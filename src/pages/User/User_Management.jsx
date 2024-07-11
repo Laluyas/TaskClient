@@ -7,11 +7,16 @@ import Snackbar from "@mui/material/Snackbar";
 import MuiAlert from "@mui/material/Alert";
 import axios from "axios";
 import AddUserModal from "../User/AddUserModal"; // Import your modal component
-import { Button } from "@mui/material";
+import { Button, useMediaQuery } from "@mui/material";
 import EditUserModal from "../User/EditUserModal";
+import EditIcon from '@mui/icons-material/Edit';
+import DeleteIcon from '@mui/icons-material/Delete';
 
 // User Management Component
 const User_Management = () => {
+
+  const isSmallScreen = useMediaQuery("(max-width:800px)");
+
   const [rowData, setRowData] = useState([]);
   const [openSnackbar, setOpenSnackbar] = useState(false);
   const [snackbarSeverity, setSnackbarSeverity] = useState("success");
@@ -21,7 +26,11 @@ const User_Management = () => {
   const [selectedUser, setSelectedUser] = useState(null); // State to hold selected user ID
 
   // Custom Delete Button Component
-  const CustomDeleteButtonComponent = (props) => {
+  const ActionButtons = (props) => {
+    const handleEdit = async () => {
+      setSelectedUser(props.data); // Set the selected user ID
+      handleEditOpenModal(); // Open edit modal
+    };
     const handleDelete = async () => {
       try {
         const response = await axios.delete(
@@ -44,24 +53,11 @@ const User_Management = () => {
 
     return (
       <>
-        <Button variant="contained" color="error" onClick={handleDelete}>
-          Delete
+      <Button variant="contained" color="success" className="me-2" onClick={handleEdit}>
+          <EditIcon/>
         </Button>
-      </>
-    );
-  };
-
-  // Custom Edit Button Component
-  const CustomEditButtonComponent = (props) => {
-    const handleEdit = async () => {
-      setSelectedUser(props.data); // Set the selected user ID
-      handleEditOpenModal(); // Open edit modal
-    };
-
-    return (
-      <>
-        <Button variant="contained" color="success" onClick={handleEdit}>
-          Edit
+        <Button variant="contained" color="error" onClick={handleDelete}>
+          <DeleteIcon/>
         </Button>
       </>
     );
@@ -109,8 +105,24 @@ const User_Management = () => {
   }, []);
 
   const pagination = true;
-  const paginationPageSize = 500;
-  const paginationPageSizeSelector = [200, 500, 1000];
+  const paginationPageSize = 10;
+  const paginationPageSizeSelector = [10, 20, 50];
+
+    // Column Definitions: Defines the columns to be displayed.
+    const [colDefs, setColDefs] = useState([
+      { field: "email", filter: true ,flex:1,},
+      { field: "role", filter: true ,flex:1,},
+      { field: "buttons", filter: true,flex:1, cellRenderer: ActionButtons },
+    ]);
+  
+      const smallColDefs = colDefs.filter(
+        (col) => col.field !== "role" 
+      );
+    
+      const getColDefs = () => {
+        if (isSmallScreen) return smallColDefs;      
+        return colDefs;
+      };
 
   return (
     <>
@@ -136,12 +148,7 @@ const User_Management = () => {
           <div className="ag-theme-quartz-dark" style={{ height: 600 }}>
             <AgGridReact
               rowData={rowData}
-              columnDefs={[
-                { field: "email", flex: 1, filter: true },
-                { field: "role", flex: 1, filter: true },
-                { field: "Edit", cellRenderer: CustomEditButtonComponent },
-                { field: "Delete", cellRenderer: CustomDeleteButtonComponent },
-              ]}
+              columnDefs={getColDefs()}
               pagination={pagination}
               paginationPageSize={paginationPageSize}
               paginationPageSizeSelector={paginationPageSizeSelector}

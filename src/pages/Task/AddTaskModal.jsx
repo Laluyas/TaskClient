@@ -20,7 +20,7 @@ const categories = ["Work", "Personal", "Study", "Others"]; // Define available 
 const priorities = ["High", "Medium", "Low"]; // Define priority levels
 const statuses = ["Pending", "In Progress", "Completed"]; // Define status options
 
-const AddTaskModal = ({ open, handleClose , setRowData}) => {
+const AddTaskModal = ({ open, handleClose , AddRowData}) => {
   const theme = useTheme();
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
@@ -92,7 +92,7 @@ const AddTaskModal = ({ open, handleClose , setRowData}) => {
       );
       taskData._id = response.data.id
       console.log("Task created:", response.data);
-      setRowData((prevRowData) => [...prevRowData, taskData])
+      AddRowData(taskData)
       setOpenSnackbar(true);
       setSnackbarSeverity("success");
       setSnackbarMessage(response.data.mssg); // Set success message from response
