@@ -20,7 +20,7 @@ const categories = ["Work", "Personal", "Study", "Others"]; // Define available 
 const priorities = ["High", "Medium", "Low"]; // Define priority levels
 const statuses = ["Pending", "In Progress", "Completed"]; // Define status options
 
-const EditTaskModal = ({ open, handleClose, taskId }) => {
+const EditTaskModal = ({ open, handleClose, selectedTask }) => {
   const theme = useTheme();
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
@@ -43,29 +43,15 @@ const EditTaskModal = ({ open, handleClose, taskId }) => {
   };
 
   useEffect(() => {
-    const fetchTask = async () => {
-      try {
-        const response = await axios.get(
-          `https://taskserver-99hb.onrender.com/api/tasks/${taskId}`
-        );
-        const taskData = response.data; // Assuming response.data is an object with task details
-        console.log(taskData);
-        if (taskData) {
-          setTitle(taskData.title);
-          setDescription(taskData.description);
-          setDueDate(new Date(taskData.dueDate).toISOString().substring(0, 10));
-          setPriority(priorities[taskData.priority - 1]); // Adjust priority based on taskData.priority
-          setCategory(taskData.category);
-          setStatus(taskData.status);
-          setAssignedTo(taskData.users); // Assuming taskData.users is an array of user objects
+        if (selectedTask) {
+          setTitle(selectedTask.title);
+          setDescription(selectedTask.description);
+          setDueDate(new Date(selectedTask.dueDate).toISOString().substring(0, 10));
+          setPriority(priorities[selectedTask.priority - 1]); // Adjust priority based on taskData.priority
+          setCategory(selectedTask.category);
+          setStatus(selectedTask.status);
+          setAssignedTo(selectedTask.users); // Assuming taskData.users is an array of user objects
         }
-      } catch (error) {
-        console.error("Error fetching task:", error);
-        setOpenSnackbar(true);
-        setSnackbarSeverity("error");
-        setSnackbarMessage(error.response.data.mssg); // Set error message from response
-      }
-    };
 
     const fetchUsers = async () => {
       try {
@@ -77,12 +63,10 @@ const EditTaskModal = ({ open, handleClose, taskId }) => {
         // Handle error, show error message or feedback to the user
       }
     };
-
-    if (open && taskId) {
-      fetchTask();
+    if (open && selectedTask) {
       fetchUsers();
     }
-  }, [open, taskId]);
+  }, [open, selectedTask]);
 
   const handleSubmit = async (event) => {
     event.preventDefault();
@@ -99,12 +83,12 @@ const EditTaskModal = ({ open, handleClose, taskId }) => {
       users: selectedUserIDs, // Array of selected user IDs
     };
 
-    console.log("Task data:", taskData);
+
 
     // Example of submitting taskData to backend
     try {
       const response = await axios.patch(
-        `https://taskserver-99hb.onrender.com/api/tasks/${taskId}`,
+        `https://taskserver-99hb.onrender.com/api/tasks/${selectedTask._id}`,
         taskData
       );
       console.log("Task updated:", response.data);

@@ -11,9 +11,43 @@ import Snackbar from "@mui/material/Snackbar";
 import MuiAlert from "@mui/material/Alert";
 
 const Task_Overview = () => {
+
   // Row Data: The data to be displayed.
   const [rowData, setRowData] = useState([]);
-  const [selectedTaskId, setSelectedTaskId] = useState(null); // State to hold selected Task ID
+  const [taskData, setTaskData] = useState([]);
+  const [selectedTask, setSelectedTask] = useState(null); // State to hold selected Task ID
+  
+
+
+  // Fetch task details with Axios
+  useEffect(() => {
+    axios
+      .get("https://taskserver-99hb.onrender.com/api/tasks/") // Replace with your API endpoint
+      .then((response) => {
+        setTaskData(response.data)
+        // Map over response data and format 'users' field if needed
+        const formattedData = response.data.map((task) => ({
+          ...task,
+          usersEmail: task.users.map((user) => user.email),
+        }));
+        
+        setRowData(formattedData);
+        console.log("Response Data:", response.data)
+        setOpenSnackbar(true);
+        setSnackbarSeverity("success");
+        setSnackbarMessage("Tasks loaded from Database successfully"); // Set success message from response
+      })
+      .catch((error) => {
+        console.error("There was an error fetching the task data!", error);
+        setOpenSnackbar(true);
+        setSnackbarSeverity("error");
+        setSnackbarMessage(
+          "There was an error fetching the task data from Database!"
+        ); // Set error message from response
+      });
+  }, []);
+
+  
 
   const [openAddModal, setAddOpenModal] = useState(false);
   const [openEditModal, setEditOpenModal] = useState(false);
@@ -48,7 +82,7 @@ const Task_Overview = () => {
 
   const CustomEditButtonComponent = ({ data }) => {
     const handleEdit = () => {
-      setSelectedTaskId(data._id);
+      setSelectedTask(data)
       handleEditOpenModal();
     };
 
@@ -115,46 +149,23 @@ const Task_Overview = () => {
     //{ field: "category", filter: true },
     {
       headerName: "Assigned To",
-      field: "users",
+      field: "usersEmail",
       filter: true,
       flex: 1,
       cellRendererFramework: ({ value }) => (
-        <ul style={{ padding: 0, margin: 0 }}>
-          {value.map((user) => (
-            <li key={user._id}>{user.email}</li>
+          <ul style={{ padding: 0, margin: 0 }}>
+          {
+          value.map((email,index) => (
+            <li key={index}>{email}</li>
           ))}
         </ul>
-      ),
+        )
     },
     { headerName: "Edit", cellRenderer: CustomEditButtonComponent },
     { headerName: "Delete", cellRenderer: CustomDeleteButtonComponent },
   ]);
 
-  // Fetch task details with Axios
-  useEffect(() => {
-    axios
-      .get("https://taskserver-99hb.onrender.com/api/tasks/") // Replace with your API endpoint
-      .then((response) => {
-        // Map over response data and format 'users' field if needed
-        const formattedData = response.data.map((task) => ({
-          ...task,
-          users: task.users.map((user) => user.email), // Assuming 'users' field contains an array of user objects
-        }));
-        setRowData(formattedData);
-        console.log(response.data);
-        setOpenSnackbar(true);
-        setSnackbarSeverity("success");
-        setSnackbarMessage("Tasks loaded from Database successfully"); // Set success message from response
-      })
-      .catch((error) => {
-        console.error("There was an error fetching the task data!", error);
-        setOpenSnackbar(true);
-        setSnackbarSeverity("error");
-        setSnackbarMessage(
-          "There was an error fetching the task data from Database!"
-        ); // Set error message from response
-      });
-  }, []);
+
 
   // Pagination settings
   const pagination = true;
@@ -217,7 +228,7 @@ const Task_Overview = () => {
       <EditTaskModal
         open={openEditModal}
         handleClose={handleEditCloseModal}
-        taskId={selectedTaskId}
+        selectedTask={selectedTask}
       />
       {/* Render other components related to task management */}
     </>
