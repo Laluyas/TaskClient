@@ -38,7 +38,7 @@ export const AuthProvider = ({ children }) => {
 
   const getUserById = async () => {
     try {
-      const response = await axios.get(`http://localhost:4000/api/users/${Id}`, {
+      const response = await axios.get(`https://taskserver-99hb.onrender.com/api/users/${Id}`, {
         headers: {
           authorization: `Bearer ${token}`,
         },
