@@ -3,67 +3,89 @@ import Box from '@mui/material/Box';
 import Drawer from '@mui/material/Drawer';
 import Button from '@mui/material/Button';
 import List from '@mui/material/List';
-import Divider from '@mui/material/Divider';
 import ListItem from '@mui/material/ListItem';
 import ListItemButton from '@mui/material/ListItemButton';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
-import InboxIcon from '@mui/icons-material/MoveToInbox';
-import MailIcon from '@mui/icons-material/Mail';
-import { Menu } from '@mui/material';
+import HomeIcon from '@mui/icons-material/Home';
+import AssignmentIcon from '@mui/icons-material/Assignment';
+import PeopleAltIcon from '@mui/icons-material/PeopleAlt';
+import AccountCircleIcon from '@mui/icons-material/AccountCircle';
+import LogoutIcon from '@mui/icons-material/Logout';
 import { IoMenu } from "react-icons/io5";
-import Container from 'react-bootstrap'
 import { Link, useNavigate } from 'react-router-dom';
+import { useAuth } from '../context/AuthProvider';
+import { useTasks } from '../context/TaskProvider';
+import { useEffect } from 'react';
+import { useUsers } from '../context/UserProvider';
 
 export default function Sidebar() {
   const [open, setOpen] = React.useState(false);
+  const navigate = useNavigate();
+  const { logout, User } = useAuth();
 
-  const navigate = useNavigate()
+  const { tasks, fetchTasks, loading } = useTasks();
+  const { user, users, fetchUsers } = useUsers();
+
+  useEffect(() => {
+    fetchTasks()
+    fetchUsers()
+  }, [])
+
 
   const toggleDrawer = (newOpen) => () => {
     setOpen(newOpen);
   };
 
-  const handleSignOut = () =>{
-    // Clear stored email from localStorage
+  const handleSignOut = () => {
+    // 1. Clear stored data from localStorage or sessionStorage
+    localStorage.removeItem('id');
     localStorage.removeItem('email');
-    navigate('/')
+    localStorage.removeItem('authToken');
+
+    // 2. Call logout function from authentication context
+    logout();
+
+    // 3. Redirect to homepage or login page
+    navigate('/');
+  };
+
+  const drawerItems = [
+    { text: 'Home', icon: <HomeIcon /> },
+    { text: 'Profile', icon: <AccountCircleIcon /> },
+    { text: 'Signout', icon: <LogoutIcon />, onClick: handleSignOut } // Added onClick handler for signout
+  ];
+
+  if (User && User.role && User.role.includes('Manager')) {
+    drawerItems.splice(1, 0, { text: 'Tasks', icon: <AssignmentIcon /> });
+    drawerItems.splice(2, 0, { text: 'Users', icon: <PeopleAltIcon /> });
   }
+
   const DrawerList = (
     <Box sx={{ width: 250 }} role="presentation" onClick={toggleDrawer(false)}>
       <List>
-        {['Home', 'Tasks', 'Users'].map((text, index) => (
-          <ListItem key={text} disablePadding>
-            <ListItemButton component={Link} to={`/authenticated/${text.toLowerCase()}`}>
+        {drawerItems.map((item, index) => (
+          <ListItem key={item.text} disablePadding>
+            <ListItemButton
+              component={item.onClick ? 'button' : Link}
+              to={item.onClick ? undefined : `/${item.text.toLowerCase()}`}
+              onClick={item.onClick}
+            >
               <ListItemIcon>
-                {index % 2 === 0 ? <InboxIcon /> : <MailIcon />}
+                {item.icon}
               </ListItemIcon>
-              <ListItemText primary={text} />
+              <ListItemText primary={item.text} />
             </ListItemButton>
           </ListItem>
         ))}
       </List>
-      <hr/>
-      <List>
-        {['Signout'].map((text, index) => (
-          <ListItem key={text} disablePadding>
-            <ListItemButton onClick={handleSignOut}>
-              <ListItemIcon>
-                {index % 2 === 0 ? <InboxIcon /> : <MailIcon />}
-              </ListItemIcon>
-              <ListItemText primary={text} />
-            </ListItemButton>
-          </ListItem>
-        ))}
-      </List>
-      
     </Box>
   );
 
   return (
     <div>
       <Button variant='primary' onClick={toggleDrawer(true)}>
-        <IoMenu style={{fontSize:"40px"}} />
+        <IoMenu style={{ fontSize: "40px" }} />
       </Button>
       <Drawer open={open} onClose={toggleDrawer(false)}>
         {DrawerList}
