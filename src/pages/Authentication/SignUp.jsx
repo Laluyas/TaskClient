@@ -46,6 +46,8 @@ export default function SignUp() {
   const [passwordError, setPasswordError] = useState(false);
   const [roleError, setRoleError] = useState(false);
 
+  const [authToken, setAuthToken] = useState(localStorage.getItem('authToken'));
+
   const handleRoleChange = (event) => {
     const { value } = event.target;
     setRole(typeof value === 'string' ? value.split(',') : value);
@@ -93,9 +95,10 @@ export default function SignUp() {
       };
   
       try {
-        const response = await axios.post('https://taskserver-99hb.onrender.com/api/users/register', user);
+        const response = await axios.post('http://localhost:4000/api/users/register', user);
         console.log('User registered successfully:', response.data);
         navigate("/");
+        setAuthToken(response.data.token);
         setOpenSnackbar(true);
         setSnackbarSeverity("success");
         setSnackbarMessage(response.data.mssg); // Set success message from response

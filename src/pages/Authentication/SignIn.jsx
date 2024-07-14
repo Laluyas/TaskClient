@@ -17,6 +17,7 @@ import { createTheme, ThemeProvider } from "@mui/material/styles";
 import axios from "axios";
 import { Link as RouterLink, useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
+import { useAuth } from "../../context/AuthProvider";
 
 // Copyright component
 function Copyright(props) {
@@ -45,26 +46,44 @@ export default function SignIn() {
   const [emailError, setEmailError] = useState(false);
   const [passwordError, setPasswordError] = useState(false);
 
+  const [authToken, setAuthToken] = useState(localStorage.getItem('authToken'));
+
+  const { login } = useAuth();
+
   const navigate = useNavigate();
 
   //Test if DB connection is working fine
   useEffect(() => {
-    const fetchUsers = async () => {
-      try {
-        const response = await axios.get("https://taskserver-99hb.onrender.com/api/users");
-        setOpenSnackbar(true);
-        setSnackbarSeverity("success");
-        setSnackbarMessage("Client is connected to Server"); // Set success message from response
-      } catch (error) {
-        console.error("Error fetching users:", error);
-        setOpenSnackbar(true);
-        setSnackbarSeverity("error");
-        setSnackbarMessage("Client is not connected to server"); // Set success message from response
-      }
-    };
-
-    fetchUsers();
+    if (authToken) {
+      navigate('/home')
+    } 
   }, []);
+
+    // Function to verify the token
+    // const verifyToken = async () => {
+    //   try {
+    //     const response = await axios.get("http://localhost:4000/api/users/verify-token", {
+    //       headers: {
+    //         authorization: `Bearer ${authToken}`,
+    //       },
+    //     });
+  
+    //     if (response.status === 200) {
+    //       navigate('/home');
+    //     }
+    //   } catch (error) {
+    //     console.error("Token verification failed", error);
+    //     localStorage.removeItem('authToken');
+    //     setAuthToken(null);
+    //   }
+    // };
+  
+    // // Test if DB connection is working fine
+    // useEffect(() => {
+    //   if (authToken) {
+    //     verifyToken();
+    //   } 
+    // }, [authToken]);
 
   const handleCloseSnackbar = (event, reason) => {
     if (reason === "clickaway") {
@@ -105,21 +124,30 @@ export default function SignIn() {
         password: password,
       };
   
-      // Store email in local storage
-      localStorage.setItem("email", email);
+
   
       try {
         const response = await axios.post(
-          "https://taskserver-99hb.onrender.com/api/users/login",
+          "http://localhost:4000/api/users/login",
           formData
         );
-        console.log(response.data);
+        
+        // Store email in local storage
+        localStorage.setItem("id", response.data.id);
+
+        localStorage.setItem("email", response.data.email);
+
+        localStorage.setItem("authToken", response.data.token);
+
+        login(response.data.id, response.data.email, response.data.token)
+
+
         if (response) {
           setOpenSnackbar(true);
           setSnackbarSeverity("success");
           setSnackbarMessage(response.data.mssg); // Set success message from response
           setTimeout(() => {
-            navigate("/authenticated/home");
+            navigate("/home");
           }, 1500); // Navigate after 1.5 seconds
         }
       } catch (error) {

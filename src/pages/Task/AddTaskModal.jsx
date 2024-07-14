@@ -15,6 +15,8 @@ import axios from "axios";
 import Autocomplete from "@mui/material/Autocomplete";
 import Snackbar from "@mui/material/Snackbar";
 import MuiAlert from "@mui/material/Alert";
+import { useUsers } from "../../context/UserProvider";
+import { useTasks } from "../../context/TaskProvider";
 
 const categories = ["Work", "Personal", "Study", "Others"]; // Define available categories
 const priorities = ["High", "Medium", "Low"]; // Define priority levels
@@ -29,11 +31,14 @@ const AddTaskModal = ({ open, handleClose , AddRowData}) => {
   const [category, setCategory] = useState("");
   const [status, setStatus] = useState("Pending"); // Default status
   const [assignedTo, setAssignedTo] = useState([]); // State to hold selected users
-  const [users, setUsers] = useState([]); // State to hold users list with id and email
 
   const [openSnackbar, setOpenSnackbar] = useState(false);
   const [snackbarSeverity, setSnackbarSeverity] = useState("success");
   const [snackbarMessage, setSnackbarMessage] = useState("");
+
+  const {tasks, setTasks, fetchTasks} = useTasks()
+  const {users, setUsers, fetchUsers, loading} = useUsers()
+  
 
   const handleCloseSnackbar = (event, reason) => {
     if (reason === "clickaway") {
@@ -41,24 +46,6 @@ const AddTaskModal = ({ open, handleClose , AddRowData}) => {
     }
     setOpenSnackbar(false);
   };
-
-  useEffect(() => {
-    const fetchUsers = async () => {
-      try {
-        const response = await axios.get("https://taskserver-99hb.onrender.com/api/users");
-        console.log("Users list:", response.data);
-        setUsers(response.data); // Set the fetched users into state
-      } catch (error) {
-        console.error("Error fetching users:", error);
-        // Handle error, show error message or feedback to the user
-      }
-    };
-
-    if (open) {
-      // Fetch users only when the modal is opened
-      fetchUsers();
-    }
-  }, [open]);
 
   const handleSubmit = async (event) => {
     event.preventDefault();
@@ -87,7 +74,7 @@ const AddTaskModal = ({ open, handleClose , AddRowData}) => {
     //Example of submitting taskData to backend
     try {
       const response = await axios.post(
-        "https://taskserver-99hb.onrender.com/api/tasks",
+        "http://localhost:4000/api/tasks",
         taskData
       );
       taskData._id = response.data.id

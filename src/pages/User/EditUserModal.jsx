@@ -65,7 +65,7 @@ const EditUserModal = ({ open, handleClose, selectedUser, setRowData }) => {
     console.log(UpdatedUser);
     try {
       const response = await axios.patch(
-        `https://taskserver-99hb.onrender.com/api/users/${selectedUser._id}`,
+        `http://localhost:4000/api/users/${selectedUser._id}`,
         UpdatedUser
       );
       setOpenSnackbar(true);

@@ -15,28 +15,31 @@ import axios from "axios";
 import Autocomplete from "@mui/material/Autocomplete";
 import Snackbar from "@mui/material/Snackbar";
 import MuiAlert from "@mui/material/Alert";
+import { useUsers } from "../../context/UserProvider";
+import { useTasks } from "../../context/TaskProvider";
 
-const categories = ["Work", "Personal", "Study", "Others"]; // Define available categories
-const priorities = ["High", "Medium", "Low"]; // Define priority levels
-const statuses = ["Pending", "In Progress", "Completed"]; // Define status options
+const categories = ["Work", "Personal", "Study", "Others"];
+const priorities = ["High", "Medium", "Low"];
+const statuses = ["Pending", "In Progress", "Completed"];
 
-const EditTaskModal = ({ open, handleClose, selectedTask , updateRowData}) => {
+const EditTaskModal = ({ open, handleClose, selectedTask, updateRowData }) => {
   const theme = useTheme();
-  const [Id, setId] = useState()
+  const [Id, setId] = useState();
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [dueDate, setDueDate] = useState("");
-  const [priority, setPriority] = useState("Low"); // Default priority
+  const [priority, setPriority] = useState("Low");
   const [category, setCategory] = useState("");
-  const [status, setStatus] = useState("Pending"); // Default status
-  const [assignedTo, setAssignedTo] = useState([]); // State to hold selected users (array of user objects)
-  const [users, setusers] = useState()
-  const [usersDropDown, setUsersDropDown] = useState([]); // State to hold users list with id and email
-
+  const [status, setStatus] = useState("Pending");
+  const [assignedTo, setAssignedTo] = useState([]);
+  const [usersDropDown, setUsersDropDown] = useState([]);
+  const { tasks, fetchTasks } = useTasks();
 
   const [openSnackbar, setOpenSnackbar] = useState(false);
   const [snackbarSeverity, setSnackbarSeverity] = useState("success");
   const [snackbarMessage, setSnackbarMessage] = useState("");
+
+  const { users: UserList, fetchUsers, loading } = useUsers();
 
   const handleCloseSnackbar = (event, reason) => {
     if (reason === "clickaway") {
@@ -46,36 +49,28 @@ const EditTaskModal = ({ open, handleClose, selectedTask , updateRowData}) => {
   };
 
   useEffect(() => {
-        if (selectedTask) {
-          setId(selectedTask._id)
-          setTitle(selectedTask.title);
-          setDescription(selectedTask.description);
-          setDueDate(new Date(selectedTask.dueDate).toISOString().substring(0, 10));
-          setPriority(priorities[selectedTask.priority - 1]); // Adjust priority based on taskData.priority
-          setCategory(selectedTask.category);
-          setStatus(selectedTask.status);
-          setAssignedTo(selectedTask.usersEmail); // Assuming taskData.users is an array of user objects
-          setusers(selectedTask.users)
-        }
-
-    const fetchUsers = async () => {
-      try {
-        const response = await axios.get("https://taskserver-99hb.onrender.com/api/users");
-        const userData = response.data; // Assuming response.data is an array of user objects
-        setUsersDropDown(userData);
-      } catch (error) {
-        console.error("Error fetching users:", error);
-        // Handle error, show error message or feedback to the user
+    const SetTask = () => {
+      
+      if (selectedTask) {
+        setId(selectedTask._id);
+        setTitle(selectedTask.title);
+        setDescription(selectedTask.description);
+        setDueDate(new Date(selectedTask.dueDate).toISOString().substring(0, 10));
+        setPriority(priorities[selectedTask.priority - 1]);
+        setCategory(selectedTask.category);
+        setStatus(selectedTask.status);
+        setAssignedTo(selectedTask.users);
       }
     };
-    if (open && selectedTask) {
-      fetchUsers();
+
+    if (!loading) {
+      SetTask();
+      setUsersDropDown(UserList);
     }
-  }, [open, selectedTask]);
+  }, [open, selectedTask, loading, UserList]);
 
   const handleSubmit = async (event) => {
     event.preventDefault();
-    // Map selected emails to user IDs
     const selectedUserIDs = assignedTo.map((user) => user._id);
 
     const taskData = {
@@ -83,32 +78,30 @@ const EditTaskModal = ({ open, handleClose, selectedTask , updateRowData}) => {
       title: title,
       description: description,
       dueDate: dueDate,
-      priority: priorities.indexOf(priority) + 1, // Map priority string to numeric value
+      priority: priorities.indexOf(priority) + 1,
       category: category,
       status: status,
-      users: users,
-      usersEmail: selectedUserIDs, // Array of selected user IDs
+      users: assignedTo,
+      usersEmail: selectedUserIDs,
     };
 
-
-
-    // Example of submitting taskData to backend
     try {
       const response = await axios.patch(
-        `https://taskserver-99hb.onrender.com/api/tasks/${selectedTask._id}`,
+        `http://localhost:4000/api/tasks/${selectedTask._id}`,
         taskData
       );
-      console.log("Task updated:", taskData);
-      updateRowData(taskData)
+      updateRowData(taskData);
       setOpenSnackbar(true);
       setSnackbarSeverity("success");
-      setSnackbarMessage(response.data.mssg); // Set success message from response
+      setSnackbarMessage(response.data.mssg);
+      fetchTasks()     
+
       handleClose();
     } catch (error) {
       console.error("Error updating task:", error);
       setOpenSnackbar(true);
       setSnackbarSeverity("error");
-      setSnackbarMessage(error.response.data.mssg); // Set error message from response
+      setSnackbarMessage(error.response.data.mssg);
     }
   };
 
@@ -127,11 +120,11 @@ const EditTaskModal = ({ open, handleClose, selectedTask , updateRowData}) => {
             left: "50%",
             transform: "translate(-50%, -50%)",
             width: {
-              xs: "90%", // 90% width on extra small screens
-              sm: "80%", // 80% width on small screens
-              md: "60%", // 60% width on medium screens
-              lg: "50%", // 50% width on large screens
-              xl: 800, // 800px width on extra large screens
+              xs: "90%",
+              sm: "80%",
+              md: "60%",
+              lg: "50%",
+              xl: 800,
             },
             bgcolor: theme.palette.background.paper,
             boxShadow: 24,
@@ -141,7 +134,6 @@ const EditTaskModal = ({ open, handleClose, selectedTask , updateRowData}) => {
           <h2 id="edit-task-modal-title">Edit Task</h2>
           <form onSubmit={handleSubmit}>
             <Grid container spacing={2}>
-              {/* First Column */}
               <Grid item xs={12} sm={6}>
                 <TextField
                   label="Title"
@@ -191,7 +183,6 @@ const EditTaskModal = ({ open, handleClose, selectedTask , updateRowData}) => {
                   </Select>
                 </FormControl>
               </Grid>
-              {/* Second Column */}
               <Grid item xs={12} sm={6}>
                 <FormControl fullWidth>
                   <InputLabel id="category-label">Category</InputLabel>
@@ -226,16 +217,15 @@ const EditTaskModal = ({ open, handleClose, selectedTask , updateRowData}) => {
                   </Select>
                 </FormControl>
               </Grid>
-              {/* Assigned To */}
               <Grid item xs={12} sm={6}>
                 <Autocomplete
                   multiple
                   id="assignedTo"
                   options={usersDropDown}
                   getOptionLabel={(option) => option.email}
-                  value={users}
+                  value={assignedTo}
                   onChange={(event, newValue) => {
-                    setusers(newValue);
+                    setAssignedTo(newValue);
                   }}
                   renderInput={(params) => (
                     <TextField
@@ -261,7 +251,6 @@ const EditTaskModal = ({ open, handleClose, selectedTask , updateRowData}) => {
                 </Button>
               </Grid>
             </Grid>
-            
           </form>
         </Box>
       </Modal>
@@ -275,7 +264,7 @@ const EditTaskModal = ({ open, handleClose, selectedTask , updateRowData}) => {
           elevation={6}
           variant="filled"
           onClose={handleCloseSnackbar}
-          severity={snackbarSeverity} // Severity can be success, error, warning, info
+          severity={snackbarSeverity}
         >
           {snackbarMessage}
         </MuiAlert>

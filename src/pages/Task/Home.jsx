@@ -12,18 +12,66 @@ import OpenTaskModal from "./OpenTaskModal";
 import NoEditOpenTaskModal from "./NoEditOpenTaskModal";
 import Snackbar from "@mui/material/Snackbar";
 import MuiAlert from "@mui/material/Alert";
+import { useAuth } from "../../context/AuthProvider";
+import { useTasks } from "../../context/TaskProvider";
+import { useUsers } from "../../context/UserProvider";
 
 const Home = () => {
-  const [value, setValue] = useState(0);
+  const { email, getUserById } = useAuth();
+  const { tasks, fetchTasks, loading } = useTasks();
+  const { user, users, fetchUsers } = useUsers();
+
+  // State for grid data
   const [assignedToMeRowData, setAssignedToMeRowData] = useState([]);
   const [unassignedRowData, setUnassignedRowData] = useState([]);
   const [completedRowData, setCompletedRowData] = useState([]);
+  
+
+  useEffect(() => {
+    
+    getUserById()
+
+    const fetchData = async () => {
+      // Map over response data and format 'users' field if needed
+      const formattedTaskData = tasks.map((task) => ({
+        ...task,
+        users: task.users.map((user) => user.email),
+      }));
+
+      // Filter tasks assigned to the current user
+      const assignedToMeTasks = formattedTaskData.filter(
+        (task) =>
+          task.users.some((userEmail) => userEmail === email) &&
+          task.status !== "Completed"
+      );
+
+      const unassignedTasks = formattedTaskData.filter(
+        (task) => task.users.length === 0
+      );
+
+      const completedTasks = formattedTaskData.filter(
+        (task) => task.status === "Completed"
+      );
+
+      setAssignedToMeRowData(assignedToMeTasks);
+      setUnassignedRowData(unassignedTasks);
+      setCompletedRowData(completedTasks);
+
+      
+    };
+
+    if (!loading && email) {
+      fetchData();
+    }
+  }, [tasks]);
+
+  const token = localStorage.getItem("authToken"); // Retrieve the token from localStorage
+
+  const [value, setValue] = useState(0);
+
   const [openModal, setOpenModal] = useState(false); // State for modal open/close
   const [noEditOpenModal, setNoEditOpenModal] = useState(false); // State for modal open/close
   const [selectedTaskId, setselectedTaskId] = useState();
-
-  // Clear stored email from localStorage
-  const storedEmail = localStorage.getItem("email");
 
   const [openSnackbar, setOpenSnackbar] = useState(false);
   const [snackbarSeverity, setSnackbarSeverity] = useState("success");
@@ -38,6 +86,79 @@ const Home = () => {
 
   const handleChange = (event, newValue) => {
     setValue(newValue);
+  };
+
+  const handleOpenModal = () => {
+    setOpenModal(true);
+  };
+
+  const handleCloseModal = () => {
+    setOpenModal(false);
+  };
+
+  const handleNoEditOpenModal = () => {
+    setNoEditOpenModal(true);
+  };
+
+  const handleNoEditCloseModal = () => {
+    setNoEditOpenModal(false);
+  };
+
+  const handleAssignTask = async (taskData) => {
+    taskData.users.push(user); // Assuming `user` holds the user object
+    taskData.status = "In Progress";
+
+
+    try {
+      const response = await axios.patch(
+        `http://localhost:4000/api/tasks/${taskData._id}`,
+        taskData
+      );
+      taskData.users = taskData.users.map(user=>user.email)
+      // Update state based on successful assignment
+      setAssignedToMeRowData((prevRowData) => [...prevRowData, taskData]);
+      setUnassignedRowData((prevRowData) =>
+        prevRowData.filter((task) => task._id !== taskData._id)
+      );
+
+      // Show success message
+      console.log("Task updated:", response.data);
+      setOpenSnackbar(true);
+      setSnackbarSeverity("success");
+      setSnackbarMessage("Task assigned to you!");
+    } catch (error) {
+      // Handle errors
+      console.error("Error updating task:", error);
+      setOpenSnackbar(true);
+      setSnackbarSeverity("error");
+      setSnackbarMessage(error.response?.data?.mssg || "Failed to update task");
+    }
+  };
+
+  const handleUnAssignTask = async (taskData) => {
+    taskData.users = [];
+    taskData.status = "Pending";
+
+    try {
+      const response = await axios.patch(
+        `http://localhost:4000/api/tasks/${taskData._id}`,
+        taskData
+      );
+
+      setAssignedToMeRowData((prevRowData) =>
+        prevRowData.filter((task) => task._id !== taskData._id)
+      );
+      setUnassignedRowData((prevRowData) => [...prevRowData, taskData]);
+      console.log("Task updated:", response.data);
+      setOpenSnackbar(true);
+      setSnackbarSeverity("success");
+      setSnackbarMessage("Task unassigned"); // Set success message from response
+    } catch (error) {
+      console.error("Error updating task:", error);
+      setOpenSnackbar(true);
+      setSnackbarSeverity("error");
+      setSnackbarMessage(error.response?.data?.mssg); // Set error message from response
+    }
   };
 
   const CustomOpenButtonComponent = ({ data }) => {
@@ -69,28 +190,8 @@ const Home = () => {
   };
 
   const CustomUnAssignButtonComponent = ({ data }) => {
-    const handleEdit = async () => {
-      data.users = [];
-      // Example of submitting taskData to backend
-      try {
-        const response = await axios.patch(
-          `https://taskserver-99hb.onrender.com/api/tasks/${data._id}`,
-          data
-        );
-        setAssignedToMeRowData((prevRowData) =>
-          prevRowData.filter((task) => task._id !== data._id)
-        );
-        setUnassignedRowData((prevRowData) => [...prevRowData, data]);
-        console.log("Task updated:", response.data);
-        setOpenSnackbar(true);
-        setSnackbarSeverity("success");
-        setSnackbarMessage("Task unassigned"); // Set success message from response
-      } catch (error) {
-        console.error("Error updating task:", error);
-        setOpenSnackbar(true);
-        setSnackbarSeverity("error");
-        setSnackbarMessage(error.response.data.mssg); // Set error message from response
-      }
+    const handleEdit = () => {
+      handleUnAssignTask(data);
     };
 
     return (
@@ -101,40 +202,8 @@ const Home = () => {
   };
 
   const CustomAssignButtonComponent = ({ data }) => {
-    const handleEdit = async () => {
-      console.log("Data being sent:", data);
-
-      try {
-        const response = await axios.get(
-          `https://taskserver-99hb.onrender.com/api/users`
-        );
-        console.log("User Data:", response.data);
-        const user = response.data.filter(
-          (value) => value.email === storedEmail
-        );
-        data.users = [user[0]._id];
-        try {
-          const response = await axios.patch(
-            `https://taskserver-99hb.onrender.com/api/tasks/${data._id}`,
-            data
-          );
-          setAssignedToMeRowData((prevRowData) => [...prevRowData, data]);
-          setUnassignedRowData((prevRowData) => prevRowData.filter((task) => task._id !== data._id))
-          console.log("Task updated:", response.data);
-          setOpenSnackbar(true);
-          setSnackbarSeverity("success");
-          setSnackbarMessage("Task assigned to you!");
-        } catch (error) {
-          console.error("Error updating task:", error);
-          setOpenSnackbar(true);
-          setSnackbarSeverity("error");
-          setSnackbarMessage(
-            error.response?.data?.mssg || "Failed to update task"
-          );
-        }
-      } catch (error) {
-        console.error("Error collecting User Data:", error);
-      }
+    const handleEdit = () => {
+      handleAssignTask(data);
     };
 
     return (
@@ -149,21 +218,8 @@ const Home = () => {
     return dateObj.toLocaleDateString();
   };
 
-  const priorityFormatter = (params) => {
-    switch (params.value) {
-      case 1:
-        return "High";
-      case 2:
-        return "Medium";
-      case 3:
-        return "Low";
-      default:
-        return "";
-    }
-  };
-
   // Column Definitions: Defines the columns to be displayed.
-  const [assignedToMeColDef, setassignedToMeColDef] = useState([
+  const assignedToMeColDef = [
     { field: "title", filter: true },
     { field: "description", filter: true },
     { field: "dueDate", filter: true, valueFormatter: dateFormatter },
@@ -185,10 +241,10 @@ const Home = () => {
     },
     { cellRenderer: CustomOpenButtonComponent },
     { cellRenderer: CustomUnAssignButtonComponent },
-  ]);
+  ];
 
   // Column Definitions: Defines the columns to be displayed.
-  const [unAssignedColDef, setunAssignedColDefs] = useState([
+  const unAssignedColDef = [
     { field: "title", filter: true },
     { field: "description", filter: true },
     { field: "dueDate", filter: true, valueFormatter: dateFormatter },
@@ -210,10 +266,10 @@ const Home = () => {
     },
     { cellRenderer: CustomNoEditOpenButtonComponent },
     { cellRenderer: CustomAssignButtonComponent },
-  ]);
+  ];
 
   // Column Definitions: Defines the columns to be displayed.
-  const [completedColDef, setcompletedColDef] = useState([
+  const completedColDef = [
     { field: "title", filter: true },
     { field: "description", filter: true },
     { field: "dueDate", filter: true, valueFormatter: dateFormatter },
@@ -234,71 +290,15 @@ const Home = () => {
       ),
     },
     { cellRenderer: CustomNoEditOpenButtonComponent },
-  ]);
-
-  useEffect(() => {
-    axios
-      .get("https://taskserver-99hb.onrender.com/api/tasks/")
-      .then((response) => {
-        const tasks = response.data;
-        // console.log(storedEmail)
-        const currentUser = storedEmail; // Replace with actual current user logic
-        console.log(currentUser);
-
-        // Map over response data and format 'users' field if needed
-        const formattedTaskData = tasks.map((task) => ({
-          ...task,
-          users: task.users.map((user) => user.email), // Assuming 'users' field contains an array of user objects
-        }));
-        // Filter tasks assigned to the current user
-        const assignedToMeTasks = formattedTaskData.filter(
-          (task) =>
-            task.users.some((userEmail) => userEmail === storedEmail) &&
-            task.status !== "Completed"
-        );
-
-        const unassignedTasks = formattedTaskData.filter(
-          (task) => task.users.length === 0
-        );
-
-        const completedTasks = formattedTaskData.filter(
-          (task) => task.status === "Completed"
-        );
-
-        setAssignedToMeRowData(assignedToMeTasks);
-        setUnassignedRowData(unassignedTasks);
-        setCompletedRowData(completedTasks);
-        setOpenSnackbar(true);
-        setSnackbarSeverity("success");
-        setSnackbarMessage("Data loaded from DB successfully"); // Set success message from response
-      })
-      .catch((error) => {
-        console.error("Error fetching tasks:", error);
-        setOpenSnackbar(true);
-        setSnackbarSeverity("error");
-        setSnackbarMessage(error.response.data.mssg); // Set success message from response
-      });
-  }, []);
+  ];
 
   const pagination = true;
   const paginationPageSize = 500;
   const paginationPageSizeSelector = [200, 500, 1000];
 
-  const handleOpenModal = () => {
-    setOpenModal(true);
-  };
-
-  const handleCloseModal = () => {
-    setOpenModal(false);
-  };
-
-  const handleNoEditOpenModal = () => {
-    setNoEditOpenModal(true);
-  };
-
-  const handleNoEditCloseModal = () => {
-    setNoEditOpenModal(false);
-  };
+  // if (!loading) {
+  //   return <div>Loading...</div>; // Optional: Show loading indicator
+  // }
 
   return (
     <>
@@ -387,6 +387,7 @@ const Home = () => {
         handleClose={handleNoEditCloseModal}
         taskId={selectedTaskId} // Pass selected user ID to EditUserModal
       />
+    
     </>
   );
 };

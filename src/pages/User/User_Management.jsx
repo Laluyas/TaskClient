@@ -11,9 +11,14 @@ import { Button, useMediaQuery } from "@mui/material";
 import EditUserModal from "../User/EditUserModal";
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
+import { useTasks } from "../../context/TaskProvider";
+import { useUsers } from "../../context/UserProvider";
 
 // User Management Component
 const User_Management = () => {
+
+  const {tasks, setTasks, fetchTasks} = useTasks()
+  const {users, setUsers, fetchUsers, loading} = useUsers()
 
   const isSmallScreen = useMediaQuery("(max-width:800px)");
 
@@ -34,7 +39,7 @@ const User_Management = () => {
     const handleDelete = async () => {
       try {
         const response = await axios.delete(
-          `https://taskserver-99hb.onrender.com/api/users/${props.data._id}`
+          `http://localhost:4000/api/users/${props.data._id}`
         );
         console.log("User deleted:", response.data);
         setRowData((prevRowData) =>
@@ -87,22 +92,11 @@ const User_Management = () => {
   };
 
   useEffect(() => {
-    axios
-      .get("https://taskserver-99hb.onrender.com/api/users/")
-      .then((response) => {
-        setRowData(response.data);
-        console.log(response.data);
-        setOpenSnackbar(true);
-        setSnackbarSeverity("success");
-        setSnackbarMessage("Users loaded from Database successfully"); // Set success message from response
-      })
-      .catch((error) => {
-        console.error("Error fetching user data:", error);
-        setOpenSnackbar(true);
-        setSnackbarSeverity("error");
-        setSnackbarMessage("There was an error fetching the user data from Database!"); // Set error message from response
-      });
-  }, []);
+    if(!loading){      
+        setRowData(users);
+      }
+    
+  }, [loading]);
 
   const pagination = true;
   const paginationPageSize = 10;

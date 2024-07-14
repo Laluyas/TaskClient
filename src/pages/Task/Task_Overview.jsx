@@ -11,6 +11,8 @@ import Snackbar from "@mui/material/Snackbar";
 import MuiAlert from "@mui/material/Alert";
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
+import { useTasks } from "../../context/TaskProvider";
+import { useUsers } from "../../context/UserProvider";
 
 
 const Task_Overview = () => {
@@ -22,35 +24,35 @@ const Task_Overview = () => {
   // Row Data: The data to be displayed.
   const [rowData, setRowData] = useState([]);
   const [selectedTask, setSelectedTask] = useState(null); // State to hold selected Task ID
-  
+  const token = localStorage.getItem('authToken'); // Retrieve the token from localStorage
 
+  const {tasks, setTasks, fetchTasks, loading} = useTasks()
+  const {users, setUsers, fetchUsers} = useUsers()
+
+  useEffect(() => {
+    const fetchData = async () =>{
+      await fetchTasks(); // Ensure tasks are fetched
+    }
+    if(!loading){
+      fetchData()
+    }
+  }, [token])
+  
 
   // Fetch task details with Axios
   useEffect(() => {
-    axios
-      .get("https://taskserver-99hb.onrender.com/api/tasks/") // Replace with your API endpoint
-      .then((response) => {
-        // Map over response data and format 'users' field if needed
-        const formattedData = response.data.map((task) => ({
-          ...task,
-          usersEmail: task.users.map((user) => user.email),
-        }));
-        
-        setRowData(formattedData);
-        console.log("Response Data:", response.data)
-        setOpenSnackbar(true);
-        setSnackbarSeverity("success");
-        setSnackbarMessage("Tasks loaded from Database successfully"); // Set success message from response
-      })
-      .catch((error) => {
-        console.error("There was an error fetching the task data!", error);
-        setOpenSnackbar(true);
-        setSnackbarSeverity("error");
-        setSnackbarMessage(
-          "There was an error fetching the task data from Database!"
-        ); // Set error message from response
-      });
-  }, []);
+    const fetchData = async () =>{
+      const formattedData = tasks.map((task) => ({
+        ...task,
+        usersEmail: task.users.map((user) => user.email),
+      }));
+      
+      setRowData(formattedData);
+    }
+    if(!loading && tasks.length > 0){
+      fetchData()
+    }
+    }, [tasks, loading, token]);
 
   
 
@@ -93,7 +95,7 @@ const Task_Overview = () => {
     const handleDelete = () => {
       // Make sure to replace 'http://localhost:4000' with your actual backend URL
       axios
-        .delete(`https://taskserver-99hb.onrender.com/api/tasks/${data._id}`)
+        .delete(`http://localhost:4000/api/tasks/${data._id}`)
         .then((response) => {
           setRowData((prevRowData) =>
             prevRowData.filter((task) => task._id !== data._id)
@@ -159,8 +161,8 @@ const Task_Overview = () => {
       cellRendererFramework: ({ value }) => (
           <ul style={{ padding: 0, margin: 0 }}>
           {
-          value.map((user) => (
-            <li key={user._id}>{user.email}</li>
+          value.map((email, index) => (
+            <li key={index}>{email}</li>
           ))}
         </ul>
         )
