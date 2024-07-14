@@ -87,7 +87,7 @@ const EditTaskModal = ({ open, handleClose, selectedTask, updateRowData }) => {
 
     try {
       const response = await axios.patch(
-        `http://localhost:4000/api/tasks/${selectedTask._id}`,
+        `https://taskserver-99hb.onrender.com/api/tasks/${selectedTask._id}`,
         taskData
       );
       updateRowData(taskData);

@@ -93,9 +93,9 @@ const Task_Overview = () => {
       handleEditOpenModal();
     };
     const handleDelete = () => {
-      // Make sure to replace 'http://localhost:4000' with your actual backend URL
+      // Make sure to replace 'https://taskserver-99hb.onrender.com' with your actual backend URL
       axios
-        .delete(`http://localhost:4000/api/tasks/${data._id}`)
+        .delete(`https://taskserver-99hb.onrender.com/api/tasks/${data._id}`)
         .then((response) => {
           setRowData((prevRowData) =>
             prevRowData.filter((task) => task._id !== data._id)

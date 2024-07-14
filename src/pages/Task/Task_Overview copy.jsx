@@ -61,7 +61,7 @@ const Task_Overview = () => {
   const CustomDeleteButtonComponent = ({ data }) => {
     const handleDelete = () => {
       axios
-        .delete(`http://localhost:4000/api/tasks/${data._id}`)
+        .delete(`https://taskserver-99hb.onrender.com/api/tasks/${data._id}`)
         .then((response) => {
           setRowData((prevRowData) =>
             prevRowData.filter((task) => task._id !== data._id)
@@ -128,7 +128,7 @@ const Task_Overview = () => {
 
   useEffect(() => {
     axios
-      .get("http://localhost:4000/api/tasks/")
+      .get("https://taskserver-99hb.onrender.com/api/tasks/")
       .then((response) => {
         const formattedData = response.data.map((task) => ({
           ...task,

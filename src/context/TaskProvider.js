@@ -12,7 +12,7 @@ export const TasksProvider = ({ children }) => {
     const token = localStorage.getItem('authToken');
     if(token){
       try {
-        const response = await axios.get('http://localhost:4000/api/tasks', {
+        const response = await axios.get('https://taskserver-99hb.onrender.com/api/tasks', {
           headers: {
             authorization: `Bearer ${token}`,
           },

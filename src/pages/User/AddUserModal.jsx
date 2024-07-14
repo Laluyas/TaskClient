@@ -53,7 +53,7 @@ const AddUserModal = ({ open, handleClose, setRowData }) => {
     };
     try {
       const response = await axios.post(
-        "http://localhost:4000/api/users/register",
+        "https://taskserver-99hb.onrender.com/api/users/register",
         user
       ); 
       user._id = response.data.id     

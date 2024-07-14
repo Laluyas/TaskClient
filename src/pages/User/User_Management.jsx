@@ -39,7 +39,7 @@ const User_Management = () => {
     const handleDelete = async () => {
       try {
         const response = await axios.delete(
-          `http://localhost:4000/api/users/${props.data._id}`
+          `https://taskserver-99hb.onrender.com/api/users/${props.data._id}`
         );
         console.log("User deleted:", response.data);
         setRowData((prevRowData) =>

@@ -111,7 +111,7 @@ const Home = () => {
 
     try {
       const response = await axios.patch(
-        `http://localhost:4000/api/tasks/${taskData._id}`,
+        `https://taskserver-99hb.onrender.com/api/tasks/${taskData._id}`,
         taskData
       );
       taskData.users = taskData.users.map(user=>user.email)
@@ -141,7 +141,7 @@ const Home = () => {
 
     try {
       const response = await axios.patch(
-        `http://localhost:4000/api/tasks/${taskData._id}`,
+        `https://taskserver-99hb.onrender.com/api/tasks/${taskData._id}`,
         taskData
       );
 

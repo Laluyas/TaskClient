@@ -15,7 +15,7 @@ export const UserProvider = ({ children }) => {
     if (!id || !token) return;
 
     try {
-      const response = await axios.get(`http://localhost:4000/api/users`, {
+      const response = await axios.get(`https://taskserver-99hb.onrender.com/api/users`, {
         headers: {
           authorization: `Bearer ${token}`,
         },
@@ -29,7 +29,7 @@ export const UserProvider = ({ children }) => {
       }
 
       try {
-        const response = await axios.get(`http://localhost:4000/api/users/${id}`, {
+        const response = await axios.get(`https://taskserver-99hb.onrender.com/api/users/${id}`, {
           headers: {
             authorization: `Bearer ${token}`,
           },
